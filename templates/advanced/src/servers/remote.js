@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+import dotenv from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+dotenv.config({ path: path.join(__dirname, '../..', '.env'), quiet: true });
+
+const { HttpServer } = await import('@mcp-rune/mcp-rune/server');
+const { config, createOAuthService, mcpConfig } = await import('../config.js');
+
+const port = config.transport.remote.port;
+const baseUrl = config.transport.remote.baseUrl || `http://localhost:${port}`;
+const isProduction = config.http.environment === 'production';
+
+const server = new HttpServer({
+  port,
+  baseUrl,
+  pathPrefix: config.transport.remote.pathPrefix,
+  oauth: createOAuthService({ redirectUri: `${baseUrl}/oauth/callback` }),
+  mcp: mcpConfig,
+  isProduction,
+  corsOrigins: config.http.corsOrigins,
+});
+
+server.start();

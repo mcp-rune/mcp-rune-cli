@@ -1,0 +1,29 @@
+import pg from 'pg';
+import { logger } from '@mcp-rune/mcp-rune/services';
+
+let pool = null;
+
+export function initDatabase(url) {
+  if (pool) return pool;
+  if (!url) return null;
+
+  pool = new pg.Pool({
+    connectionString: url,
+    max: 5,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+  });
+  logger.info('Database pool created', { service: '{{projectName}}-db' });
+  return pool;
+}
+
+export function getPool() {
+  return pool;
+}
+
+export async function closeDatabase() {
+  if (!pool) return;
+  await pool.end();
+  pool = null;
+  logger.info('Database pool closed', { service: '{{projectName}}-db' });
+}

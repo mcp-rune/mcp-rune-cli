@@ -1,0 +1,136 @@
+/**
+ * Tool registry — registers MCP tools with profile + runtime gating.
+ *
+ * - Strategy tools (no auth): get_prompt_guide, validate_form, …
+ * - Data tools (require an API token): list_models, find_records, create_model, …
+ * - Analysis / operations tools: only registered when vector storage is enabled.
+ * - Domain tools: only registered when a domain registry is provided.
+ *
+ * Filtered by the active profile (from MCP_PROFILE).
+ */
+
+import { STRATEGY_TOOL_CLASSES } from '@mcp-rune/mcp-rune/prompts';
+import {
+  DATA_TOOL_CLASSES,
+  ANALYSIS_TOOL_CLASSES,
+  OPERATIONS_TOOL_CLASSES,
+  DOMAIN_TOOL_CLASSES,
+  TOOL_CATEGORIES,
+} from '@mcp-rune/mcp-rune/tools';
+import { vectorStorage, tracing } from '@mcp-rune/mcp-rune/services';
+
+const TOOL_CLASSES = {
+  ...STRATEGY_TOOL_CLASSES,
+  ...DATA_TOOL_CLASSES,
+  ...ANALYSIS_TOOL_CLASSES,
+  ...OPERATIONS_TOOL_CLASSES,
+  ...DOMAIN_TOOL_CLASSES,
+};
+
+export class ToolRegistry {
+  constructor({ logger, models, promptRegistry, serverContext, domainRegistry, apiUrl, profile }) {
+    this.logger = logger;
+    this.models = models;
+    this.promptRegistry = promptRegistry;
+    this.serverContext = serverContext || {};
+    this.domainRegistry = domainRegistry;
+    this.apiUrl = apiUrl;
+    this.profile = profile || { tools: null };
+    this._enabledTools = null;
+  }
+
+  registerTools(mcpServer, { getAccessToken, logContext = {} } = {}) {
+    const enabled = this._enabled();
+
+    for (const [toolName, ToolClass] of Object.entries(TOOL_CLASSES)) {
+      if (!enabled.has(toolName)) continue;
+
+      const def = this._instance(ToolClass);
+      mcpServer.registerTool(
+        toolName,
+        { description: def.description, inputSchema: def.inputSchema },
+        async (args) => {
+          this.logger.info('Tool called', { ...logContext, tool: toolName });
+          try {
+            const instance = ToolClass.requiresAuth
+              ? await this._authedInstance(ToolClass, getAccessToken)
+              : this._instance(ToolClass);
+            return await tracing.traceToolCall(toolName, args || {}, () =>
+              instance.execute(args || {}),
+            );
+          } catch (err) {
+            this.logger.error('Tool error', { ...logContext, tool: toolName, error: err.message });
+            return {
+              content: [{ type: 'text', text: `Error: ${err.message}` }],
+              isError: true,
+            };
+          }
+        },
+      );
+    }
+  }
+
+  _enabled() {
+    if (this._enabledTools) return this._enabledTools;
+    let names = Object.keys(TOOL_CLASSES);
+
+    if (!vectorStorage.isVectorStorageEnabled()) {
+      const analysis = this._namesByCategory(TOOL_CATEGORIES.ANALYSIS);
+      const ops = this._namesByCategory(TOOL_CATEGORIES.OPERATIONS);
+      names = names.filter((n) => !analysis.has(n) && !ops.has(n));
+    }
+
+    if (!this.domainRegistry) {
+      const domain = this._namesByCategory(TOOL_CATEGORIES.DOMAIN);
+      names = names.filter((n) => !domain.has(n));
+    }
+
+    if (this.profile.tools) {
+      const allow = new Set(this.profile.tools);
+      names = names.filter((n) => allow.has(n));
+    }
+    if (this.profile.toolsExclude) {
+      const deny = new Set(this.profile.toolsExclude);
+      names = names.filter((n) => !deny.has(n));
+    }
+
+    this._enabledTools = new Set(names);
+    return this._enabledTools;
+  }
+
+  _namesByCategory(category) {
+    return new Set(
+      Object.entries(TOOL_CLASSES)
+        .filter(([, C]) => C.category === category)
+        .map(([n]) => n),
+    );
+  }
+
+  _instance(ToolClass) {
+    return new ToolClass({
+      logger: this.logger,
+      models: this.models,
+      promptRegistry: this.promptRegistry,
+      serverContext: this.serverContext,
+      domainRegistry: this.domainRegistry,
+    });
+  }
+
+  async _authedInstance(ToolClass, getAccessToken) {
+    const token = await getAccessToken?.();
+    if (!token) throw new Error('Not authenticated.');
+    return new ToolClass({
+      apiClient: { /* inject your API client here; see README */ },
+      accessToken: token,
+      logger: this.logger,
+      models: this.models,
+      promptRegistry: this.promptRegistry,
+      serverContext: this.serverContext,
+      domainRegistry: this.domainRegistry,
+    });
+  }
+}
+
+export function createToolRegistry(deps) {
+  return new ToolRegistry(deps);
+}

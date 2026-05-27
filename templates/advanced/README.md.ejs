@@ -1,0 +1,68 @@
+# <%= projectName %>
+
+MCP server scaffolded with [`@mcp-rune/create`](https://github.com/mcp-rune/mcp-rune-cli) (advanced preset).
+
+## Run
+
+```bash
+cp .env.example .env
+# fill in GH_PACKAGES_READ_TOKEN, OAUTH_*, etc.
+npm install
+<% if (hasStdio) { -%>
+npm run start:local        # stdio (for Claude Code, Cursor, etc.)
+<% } -%>
+<% if (hasHttp) { -%>
+npm run start:remote       # HTTP + OAuth
+<% } -%>
+```
+
+<% if (withAnalysis) { -%>
+## Analysis module
+
+This project ships with a `docker-compose.yml` for Postgres + pgvector. Bring it up before running the server:
+
+```bash
+npm run db:up              # docker compose up -d + migrations
+npm run db:down            # tear down
+```
+
+`ANALYSIS_ENABLED=true` in `.env` exposes the analysis tools (semantic search, stratified sampling, ingestion).
+
+<% } -%>
+## Profiles
+
+Set `MCP_PROFILE` to control the exposed tool surface (same binary, different shape):
+
+| Profile    | Tools                              | Apps     |
+|------------|------------------------------------|----------|
+| `full`     | everything                         | enabled  |
+| `chat`     | hides raw-JSON data tools          | enabled  |
+| `agent`    | all                                | disabled |
+| `classify` | only `update_model`                | disabled |
+
+See `src/profiles.js`.
+
+## Layout
+
+```
+src/
+├── servers/
+│   ├── local.js          stdio entry point
+│   └── remote.js         HTTP + OAuth entry point
+├── config.js             startup phases (identity → config → DB → tools)
+├── db.js                 shared pg.Pool
+├── profiles.js           tool exposure profiles
+├── models/               domain models
+├── prompts/              prompt classes (auto-derived from models)
+├── tools/                tool registry
+<% if (withDomain) { -%>
+├── domain/               workflows + business rules
+<% } -%>
+└── scripts/
+    └── db-migrate.js     apply mcp-rune migrations
+```
+
+## Useful links
+
+- [mcp-rune docs](https://github.com/mcp-rune/mcp-rune)
+- MCP Inspector: `npm run inspect:remote`

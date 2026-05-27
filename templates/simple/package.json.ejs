@@ -1,0 +1,17 @@
+{
+  "name": "<%= projectName %>",
+  "version": "0.1.0",
+  "description": "MCP server scaffolded with @mcp-rune/create",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": "<%= nodeEngine %>"
+  },
+  "scripts": {
+    "start:local": "node src/server.js",
+    "dev:inspector": "npx @modelcontextprotocol/inspector node src/server.js"
+  },
+  "dependencies": {
+    "@mcp-rune/mcp-rune": "<%= mcpRuneVersion %>"
+  }
+}

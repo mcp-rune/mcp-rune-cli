@@ -1,0 +1,17 @@
+{
+  "name": "vector-backend-spike",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Feasibility spike: sqlite-vec vs pgvector parity",
+  "scripts": {
+    "spike:sqlite": "node sqlite-vec.spike.mjs",
+    "spike:pgvector": "node pgvector.spike.mjs",
+    "spike:parity": "node parity.spike.mjs"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.5.0",
+    "sqlite-vec": "^0.1.7-alpha.2",
+    "pg": "^8.13.1"
+  }
+}

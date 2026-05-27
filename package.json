@@ -1,0 +1,34 @@
+{
+  "name": "@mcp-rune/create",
+  "version": "0.1.0",
+  "description": "Scaffolder for mcp-rune-based MCP servers",
+  "type": "module",
+  "bin": {
+    "rune": "./bin/rune.js",
+    "create-mcp-rune": "./bin/rune.js"
+  },
+  "main": "./src/index.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "templates/",
+    "README.md"
+  ],
+  "scripts": {
+    "rune": "node bin/rune.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.2.0",
+    "commander": "^12.1.0",
+    "ejs": "^3.1.10",
+    "execa": "^9.5.2",
+    "kleur": "^4.1.5"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}

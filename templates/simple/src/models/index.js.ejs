@@ -1,0 +1,13 @@
+<% for (const m of models) { -%>
+import { <%= m.namePascal %> } from './<%= m.fileName %>.js';
+<% } -%>
+
+export const MODEL_CLASSES = {
+<% for (const m of models) { -%>
+  <%= m.fileName %>: <%= m.namePascal %>,
+<% } -%>
+};
+
+<% for (const m of models) { -%>
+export { <%= m.namePascal %> };
+<% } -%>

@@ -1,0 +1,117 @@
+/**
+ * <%= projectName %> — Declarative Configuration Schema
+ *
+ * Single source of truth for all environment variables. Loaded via loadConfig()
+ * at startup. Every env var read in the codebase should be declared here.
+ */
+
+export const configSchema = {
+  api: {
+    url: {
+      env: 'API_URL',
+      default: 'http://localhost:4001/api/v1',
+      doc: 'Backend API base URL',
+    },
+  },
+
+<% if (hasHttp) { -%>
+  oauth: {
+    serverUrl: {
+      env: 'OAUTH_SERVER_URL',
+      default: 'http://localhost:4000',
+      doc: 'OAuth2 authorization server URL',
+    },
+    clientId: {
+      env: 'OAUTH_CLIENT_ID',
+      doc: 'OAuth2 client ID',
+    },
+    clientSecret: {
+      env: 'OAUTH_CLIENT_SECRET',
+      sensitive: true,
+      doc: 'OAuth2 client secret',
+    },
+    scopes: {
+      env: 'OAUTH_SCOPES',
+      default: 'read write',
+      doc: 'OAuth2 scopes',
+    },
+  },
+
+<% } -%>
+  database: {
+    url: {
+      env: 'DATABASE_URL',
+      sensitive: true,
+      doc: 'PostgreSQL connection string (optional; enables OAuth token persistence + analysis)',
+    },
+  },
+
+  analysis: {
+    enabled: {
+      env: 'ANALYSIS_ENABLED',
+      default: false,
+      type: 'boolean',
+      doc: 'Enable analysis tools. Requires DATABASE_URL pointing at Postgres with pgvector.',
+    },
+  },
+
+<% if (withDomain) { -%>
+  domain: {
+    enabled: {
+      env: 'DOMAIN_ENABLED',
+      default: true,
+      type: 'boolean',
+      doc: 'Enable domain intelligence tools (workflows, business rules).',
+    },
+  },
+
+<% } -%>
+  profile: {
+    name: {
+      env: 'MCP_PROFILE',
+      default: 'full',
+      doc: 'Tool exposure profile: full | chat | agent | classify',
+    },
+  },
+
+  transport: {
+<% if (hasStdio) { -%>
+    local: {
+      accessToken: {
+        env: 'ACCESS_TOKEN',
+        sensitive: true,
+        doc: 'Bearer token used by stdio for API calls',
+      },
+    },
+<% } -%>
+<% if (hasHttp) { -%>
+    remote: {
+      port: { env: 'PORT', type: 'integer', default: 4100, doc: 'HTTP server port' },
+      baseUrl: { env: 'BASE_URL', doc: 'Public base URL for the server' },
+      pathPrefix: { env: 'PATH_PREFIX', default: '', doc: 'Path prefix for all routes' },
+    },
+<% } -%>
+  },
+
+  http: {
+    corsOrigins: { env: 'CORS_ORIGINS', doc: 'Comma-separated list of allowed CORS origins' },
+    environment: { env: 'NODE_ENV', default: 'development', doc: 'Runtime environment' },
+  },
+
+  errorTracking: {
+    sentryDsn: { env: 'SENTRY_DSN', sensitive: true, doc: 'Sentry DSN for error tracking' },
+  },
+
+  tracing: {
+    langfusePublicKey: {
+      env: 'LANGFUSE_PUBLIC_KEY',
+      sensitive: true,
+      doc: 'Langfuse public key',
+    },
+    langfuseSecretKey: {
+      env: 'LANGFUSE_SECRET_KEY',
+      sensitive: true,
+      doc: 'Langfuse secret key',
+    },
+  },
+};

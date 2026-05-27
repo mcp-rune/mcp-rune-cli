@@ -1,0 +1,33 @@
+<% for (const m of models) { -%>
+import { <%= m.namePascal %>Prompt } from './<%= m.fileName %>-prompt.js';
+<% } -%>
+<% for (const m of models) { -%>
+import { <%= m.namePascal %> } from '../models/<%= m.fileName %>.js';
+<% } -%>
+
+const PROMPT_CLASSES = {
+<% for (const m of models) { -%>
+  <%= m.fileName %>: <%= m.namePascal %>Prompt,
+<% } -%>
+};
+
+const PROMPT_DESCRIPTIONS = {
+<% for (const m of models) { -%>
+  <%= m.fileName %>: <%= m.namePascal %>.description,
+<% } -%>
+};
+
+export const promptRegistry = {
+  getDefinitions() {
+    return Object.entries(PROMPT_DESCRIPTIONS).map(([name, description]) => ({
+      name,
+      description,
+      required: true,
+    }));
+  },
+
+  getPrompt(name) {
+    const PromptClass = PROMPT_CLASSES[name];
+    return PromptClass ? new PromptClass() : null;
+  },
+};

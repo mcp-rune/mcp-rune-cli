@@ -1,0 +1,29 @@
+{
+  "name": "<%= projectName %>",
+  "version": "0.1.0",
+  "description": "MCP server scaffolded with @mcp-rune/create (advanced preset)",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": "<%= nodeEngine %>"
+  },
+  "scripts": {
+<% if (hasStdio) { -%>
+    "start:local": "node src/servers/local.js",
+<% } -%>
+<% if (hasHttp) { -%>
+    "start:remote": "node src/servers/remote.js",
+    "start:chat": "MCP_PROFILE=chat node src/servers/remote.js",
+    "start:agent": "MCP_PROFILE=agent node src/servers/remote.js",
+    "inspect:remote": "npx @modelcontextprotocol/inspector --url http://localhost:4100/mcp",
+<% } -%>
+    "db:migrate": "node src/scripts/db-migrate.js"<% if (withAnalysis) { %>,
+    "db:up": "docker compose up -d db && npm run db:migrate",
+    "db:down": "docker compose down"<% } %>
+  },
+  "dependencies": {
+    "@mcp-rune/mcp-rune": "<%= mcpRuneVersion %>",
+    "dotenv": "^17.3.1",
+    "pg": "^8.18.0"
+  }
+}
