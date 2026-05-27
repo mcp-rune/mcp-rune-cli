@@ -5,3 +5,8 @@ node_modules/
 dist/
 coverage/
 .vitest-cache/
+*.tsbuildinfo
+
+# Editor / IDE / agent local state
+.claude/
+.husky/

@@ -6,10 +6,10 @@ import { doctorCommand } from './commands/doctor.js';
 import { dbUpCommand } from './commands/db-up.js';
 
 const pkg = JSON.parse(
-  readFileSync(new URL('../package.json', import.meta.url), 'utf8')
-);
+  readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+) as { version: string };
 
-export async function run(argv) {
+export async function run(argv: string[]): Promise<void> {
   const program = new Command();
 
   program
@@ -27,7 +27,7 @@ export async function run(argv) {
     .option('--with-analysis', 'enable the analysis module (Docker pgvector)')
     .option('--with-domain', 'enable the domain workflows module')
     .option('--transport <transport>', 'stdio | http | both')
-    .option('--models <models>', 'semicolon-separated list: Name:attr:type,attr:type;Other:...')
+    .option('--models <models>', 'comma-list: Name1,Name2')
     .action(newCommand);
 
   const addCmd = program.command('add').description('Add components to an existing project');

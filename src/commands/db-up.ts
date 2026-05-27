@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { execa } from 'execa';
 import kleur from 'kleur';
 
-export async function dbUpCommand() {
+export async function dbUpCommand(): Promise<void> {
   const cwd = process.cwd();
 
   if (!existsSync(resolve(cwd, 'docker-compose.yml'))) {
@@ -34,7 +34,7 @@ export async function dbUpCommand() {
   console.log(kleur.green('✓ db is up; migrations applied'));
 }
 
-async function waitForHealthy(cwd, timeoutMs) {
+async function waitForHealthy(cwd: string, timeoutMs: number): Promise<boolean> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     try {
@@ -44,7 +44,9 @@ async function waitForHealthy(cwd, timeoutMs) {
         { cwd, timeout: 3000 },
       );
       if (stdout.trim() === 'healthy') return true;
-    } catch { /* not ready */ }
+    } catch {
+      /* not ready */
+    }
     await new Promise((r) => setTimeout(r, 500));
   }
   return false;

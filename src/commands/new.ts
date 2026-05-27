@@ -2,7 +2,18 @@ import { resolve } from 'node:path';
 import { existsSync } from 'node:fs';
 import kleur from 'kleur';
 
-export async function newCommand(projectName, opts) {
+export interface NewCommandOptions {
+  preset?: string;
+  yes?: boolean;
+  install?: boolean;
+  git?: boolean;
+  withAnalysis?: boolean;
+  withDomain?: boolean;
+  transport?: 'stdio' | 'http' | 'both';
+  models?: string;
+}
+
+export async function newCommand(projectName: string, opts: NewCommandOptions): Promise<void> {
   const targetDir = resolve(process.cwd(), projectName);
 
   if (existsSync(targetDir)) {
@@ -23,9 +34,7 @@ export async function newCommand(projectName, opts) {
     models: opts.models,
   };
 
-  const answers = opts.yes
-    ? resolveAnswers(flagAnswers)
-    : await runWizard(flagAnswers);
+  const answers = opts.yes ? resolveAnswers(flagAnswers) : await runWizard(flagAnswers);
 
   console.log();
   console.log(kleur.bold(`Scaffolding ${kleur.cyan(answers.projectName)} (${answers.preset})…`));
@@ -36,7 +45,10 @@ export async function newCommand(projectName, opts) {
 
   console.log(kleur.green(`✓ wrote files to ${targetDir}`));
 
-  await postScaffold(targetDir, { install: opts.install !== false, git: opts.git !== false });
+  await postScaffold(targetDir, {
+    install: opts.install !== false,
+    git: opts.git !== false,
+  });
 
   console.log();
   console.log(kleur.bold('Next steps:'));

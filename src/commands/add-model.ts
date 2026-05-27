@@ -3,13 +3,19 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ejs from 'ejs';
 import kleur from 'kleur';
+import { pascal } from '../render/copy-tree.js';
+import type { Model, ModelAttr, Preset, TemplateVars } from '../types.js';
 
-const DEFAULT_ATTRIBUTES = [
+const DEFAULT_ATTRIBUTES: ModelAttr[] = [
   { name: 'name', type: 'string', required: true, description: 'Name' },
   { name: 'description', type: 'text', description: 'Description' },
 ];
 
-export async function addModelCommand(modelName, opts) {
+export interface AddModelOptions {
+  attrs?: string;
+}
+
+export async function addModelCommand(modelName: string, opts: AddModelOptions): Promise<void> {
   const cwd = process.cwd();
   const preset = detectPreset(cwd);
   if (!preset) {
@@ -43,10 +49,24 @@ export async function addModelCommand(modelName, opts) {
   const vars = makeVars(cwd, preset, allModels);
   const templateRoot = fileURLToPath(new URL(`../../templates/${preset}/`, import.meta.url));
 
-  await renderEjs(resolve(templateRoot, 'src/models/_model_.js.ejs'), newModelPath, { ...vars, model: newModel });
-  await renderEjs(resolve(templateRoot, 'src/prompts/_model_-prompt.js.ejs'), newPromptPath, { ...vars, model: newModel });
-  await renderEjs(resolve(templateRoot, 'src/models/index.js.ejs'), resolve(cwd, 'src/models/index.js'), vars);
-  await renderEjs(resolve(templateRoot, 'src/prompts/index.js.ejs'), resolve(cwd, 'src/prompts/index.js'), vars);
+  await renderEjs(resolve(templateRoot, 'src/models/_model_.js.ejs'), newModelPath, {
+    ...vars,
+    model: newModel,
+  });
+  await renderEjs(resolve(templateRoot, 'src/prompts/_model_-prompt.js.ejs'), newPromptPath, {
+    ...vars,
+    model: newModel,
+  });
+  await renderEjs(
+    resolve(templateRoot, 'src/models/index.js.ejs'),
+    resolve(cwd, 'src/models/index.js'),
+    vars,
+  );
+  await renderEjs(
+    resolve(templateRoot, 'src/prompts/index.js.ejs'),
+    resolve(cwd, 'src/prompts/index.js'),
+    vars,
+  );
 
   console.log(kleur.green(`✓ added model ${namePascal}`));
   console.log(`  ${kleur.dim('+')} src/models/${fileName}.js`);
@@ -57,13 +77,13 @@ export async function addModelCommand(modelName, opts) {
   console.log(kleur.dim(`Edit src/models/${fileName}.js to declare attributes.`));
 }
 
-function detectPreset(cwd) {
+function detectPreset(cwd: string): Preset | null {
   if (existsSync(resolve(cwd, 'src/servers/local.js'))) return 'advanced';
   if (existsSync(resolve(cwd, 'src/server.js'))) return 'simple';
   return null;
 }
 
-function collectExistingModels(cwd) {
+function collectExistingModels(cwd: string): Model[] {
   const modelsDir = resolve(cwd, 'src/models');
   if (!existsSync(modelsDir)) return [];
   return readdirSync(modelsDir)
@@ -72,22 +92,33 @@ function collectExistingModels(cwd) {
     .map((fileName) => makeModel(fileName));
 }
 
-function makeModel(input, attributes = DEFAULT_ATTRIBUTES) {
+function makeModel(input: string, attributes: ModelAttr[] = DEFAULT_ATTRIBUTES): Model {
   const fileName = input.toLowerCase();
   const namePascal = pascal(input);
   return { name: namePascal, fileName, namePascal, attributes };
 }
 
-function parseAttrs(spec) {
+function parseAttrs(spec: string | undefined): ModelAttr[] {
   if (!spec) return DEFAULT_ATTRIBUTES;
-  return spec.split(',').map((s) => s.trim()).filter(Boolean).map((pair) => {
-    const [name, type = 'string'] = pair.split(':').map((x) => x.trim());
-    return { name, type, description: name.replace(/_/g, ' ') };
-  });
+  return spec
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((pair) => {
+      const [name = '', type = 'string'] = pair.split(':').map((x) => x.trim());
+      return {
+        name,
+        type: type as ModelAttr['type'],
+        description: name.replace(/_/g, ' '),
+      };
+    });
 }
 
-function makeVars(cwd, preset, models) {
-  const pkg = JSON.parse(readFileSync(resolve(cwd, 'package.json'), 'utf8'));
+function makeVars(cwd: string, preset: Preset, models: Model[]): TemplateVars {
+  const pkg = JSON.parse(readFileSync(resolve(cwd, 'package.json'), 'utf8')) as {
+    name: string;
+    dependencies?: Record<string, string>;
+  };
   return {
     projectName: pkg.name,
     projectNamePascal: pascal(pkg.name),
@@ -103,17 +134,13 @@ function makeVars(cwd, preset, models) {
   };
 }
 
-async function renderEjs(templatePath, outPath, vars) {
+async function renderEjs(
+  templatePath: string,
+  outPath: string,
+  vars: TemplateVars,
+): Promise<void> {
   const content = readFileSync(templatePath, 'utf8');
   const out = await ejs.render(content, vars, { async: true, escape: (s) => String(s) });
   mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, out);
-}
-
-function pascal(s) {
-  return s
-    .split(/[-_\s]+/)
-    .filter(Boolean)
-    .map((w) => w[0].toUpperCase() + w.slice(1))
-    .join('');
 }

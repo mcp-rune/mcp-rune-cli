@@ -3,12 +3,18 @@ import { resolve } from 'node:path';
 import { execa } from 'execa';
 import kleur from 'kleur';
 
-export async function doctorCommand() {
-  const results = [];
+type CheckResult =
+  | { status: 'ok'; label: string; hint?: string }
+  | { status: 'warn'; label: string; hint?: string }
+  | { status: 'fail'; label: string; hint?: string }
+  | { skip: true };
+
+export async function doctorCommand(): Promise<void> {
+  const results: Exclude<CheckResult, { skip: true }>[] = [];
 
   for (const check of CHECKS) {
     const r = await check();
-    if (r.skip) continue;
+    if ('skip' in r) continue;
     results.push(r);
     print(r);
   }
@@ -26,16 +32,18 @@ export async function doctorCommand() {
   }
 }
 
-function print({ status, label, hint }) {
+function print(r: Exclude<CheckResult, { skip: true }>): void {
   const icon =
-    status === 'ok' ? kleur.green('✓') : status === 'warn' ? kleur.yellow('!') : kleur.red('✗');
-  const suffix = hint ? kleur.dim(`  — ${hint}`) : '';
-  console.log(`${icon} ${label}${suffix}`);
+    r.status === 'ok' ? kleur.green('✓') : r.status === 'warn' ? kleur.yellow('!') : kleur.red('✗');
+  const suffix = r.hint ? kleur.dim(`  — ${r.hint}`) : '';
+  console.log(`${icon} ${r.label}${suffix}`);
 }
 
-const CHECKS = [
+type Check = () => Promise<CheckResult>;
+
+const CHECKS: Check[] = [
   async () => {
-    const major = Number.parseInt(process.versions.node.split('.')[0], 10);
+    const major = Number.parseInt(process.versions.node.split('.')[0]!, 10);
     if (major >= 24) return { status: 'ok', label: `Node.js ${process.versions.node}` };
     if (major >= 22) {
       return {
@@ -88,8 +96,12 @@ const CHECKS = [
     const pkgPath = resolve(process.cwd(), 'package.json');
     if (!existsSync(pkgPath)) return { skip: true };
 
-    let pkg;
-    try { pkg = JSON.parse(readFileSync(pkgPath, 'utf8')); } catch { return { skip: true }; }
+    let pkg: { dependencies?: Record<string, string> };
+    try {
+      pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+    } catch {
+      return { skip: true };
+    }
     if (!pkg.dependencies?.['@mcp-rune/mcp-rune']) return { skip: true };
 
     const installed = existsSync(resolve(process.cwd(), 'node_modules/@mcp-rune/mcp-rune'));
@@ -112,7 +124,11 @@ const CHECKS = [
       const running = stdout.trim().length > 0;
       return running
         ? { status: 'ok', label: 'docker-compose services running' }
-        : { status: 'warn', label: 'docker-compose.yml present but no services running', hint: 'run `rune db up`' };
+        : {
+            status: 'warn',
+            label: 'docker-compose.yml present but no services running',
+            hint: 'run `rune db up`',
+          };
     } catch {
       return { status: 'warn', label: 'docker-compose.yml present but compose not reachable' };
     }
