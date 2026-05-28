@@ -28,6 +28,10 @@ export async function run(argv: string[]): Promise<void> {
     .option('--with-domain', 'enable the domain workflows module')
     .option('--transport <transport>', 'stdio | http | both')
     .option('--models <models>', 'comma-list: Name1,Name2')
+    .option(
+      '--mcp-rune-local <path>',
+      'use a local checkout of @mcp-rune/mcp-rune (writes file:<abs-path> into package.json; also reads MCP_RUNE_LOCAL_PATH)',
+    )
     .action(newCommand);
 
   const addCmd = program.command('add').description('Add components to an existing project');
