@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
 import { newCommand } from './commands/new.js';
 import { addModelCommand } from './commands/add-model.js';
-import { doctorCommand } from './commands/doctor.js';
+import { doctorCommand } from './commands/doctor/index.js';
 import { dbUpCommand } from './commands/db-up.js';
 
 const pkg = JSON.parse(
