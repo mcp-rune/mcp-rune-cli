@@ -1,47 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { execa } from 'execa';
-import kleur from 'kleur';
+import type { CheckResult } from './index.js';
 
-type CheckResult =
-  | { status: 'ok'; label: string; hint?: string }
-  | { status: 'warn'; label: string; hint?: string }
-  | { status: 'fail'; label: string; hint?: string }
-  | { skip: true };
+export type Check = () => Promise<CheckResult>;
 
-export async function doctorCommand(): Promise<void> {
-  const results: Exclude<CheckResult, { skip: true }>[] = [];
-
-  for (const check of CHECKS) {
-    const r = await check();
-    if ('skip' in r) continue;
-    results.push(r);
-    print(r);
-  }
-
-  const failed = results.filter((r) => r.status === 'fail').length;
-  const warned = results.filter((r) => r.status === 'warn').length;
-  console.log();
-  if (failed > 0) {
-    console.log(kleur.red(`${failed} check(s) failed${warned ? `, ${warned} warning(s)` : ''}.`));
-    process.exitCode = 1;
-  } else if (warned > 0) {
-    console.log(kleur.yellow(`${warned} warning(s).`));
-  } else {
-    console.log(kleur.green('All checks passed.'));
-  }
-}
-
-function print(r: Exclude<CheckResult, { skip: true }>): void {
-  const icon =
-    r.status === 'ok' ? kleur.green('✓') : r.status === 'warn' ? kleur.yellow('!') : kleur.red('✗');
-  const suffix = r.hint ? kleur.dim(`  — ${r.hint}`) : '';
-  console.log(`${icon} ${r.label}${suffix}`);
-}
-
-type Check = () => Promise<CheckResult>;
-
-const CHECKS: Check[] = [
+export const CHECKS: Check[] = [
   async () => {
     const major = Number.parseInt(process.versions.node.split('.')[0]!, 10);
     if (major >= 24) return { status: 'ok', label: `Node.js ${process.versions.node}` };

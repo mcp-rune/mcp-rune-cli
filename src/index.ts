@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
 import { newCommand } from './commands/new.js';
 import { addModelCommand } from './commands/add-model.js';
-import { doctorCommand } from './commands/doctor.js';
+import { doctorCommand } from './commands/doctor/index.js';
 import { dbUpCommand } from './commands/db-up.js';
 
 const pkg = JSON.parse(
@@ -43,6 +43,10 @@ export async function run(argv: string[]): Promise<void> {
   program
     .command('doctor')
     .description('Validate the local environment for mcp-rune development')
+    .option(
+      '-p, --project [path]',
+      "also validate the local project's models/forms/prompts (defaults to cwd)",
+    )
     .action(doctorCommand);
 
   const dbCmd = program.command('db').description('Database operations for the analysis module');
