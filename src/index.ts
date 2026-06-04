@@ -4,6 +4,7 @@ import { newCommand } from './commands/new.js';
 import { addModelCommand } from './commands/add-model.js';
 import { doctorCommand } from './commands/doctor/index.js';
 import { dbUpCommand } from './commands/db-up.js';
+import { inspectCommand } from './commands/inspect.js';
 
 const pkg = JSON.parse(
   readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
@@ -48,6 +49,15 @@ export async function run(argv: string[]): Promise<void> {
       "also validate the local project's models/forms/prompts (defaults to cwd)",
     )
     .action(doctorCommand);
+
+  program
+    .command('inspect')
+    .description('Open the MCP Inspector pre-wired against the current project')
+    .option('--transport <kind>', 'force transport: stdio | http')
+    .option('--url <url>', 'connect to this URL (implies http)')
+    .option('--port <port>', 'http port (default 4100)')
+    .option('--server <path>', 'path to the stdio server entry')
+    .action(inspectCommand);
 
   const dbCmd = program.command('db').description('Database operations for the analysis module');
   dbCmd.command('up').description('Start docker-compose db and run migrations').action(dbUpCommand);
