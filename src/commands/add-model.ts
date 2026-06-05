@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync, mkdirSync } from 
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ejs from 'ejs';
-import kleur from 'kleur';
+import { error, hint, listAdd, listEdit, ok, space } from '../core/output.js';
 import { pascal } from '../render/copy-tree.js';
 import type { Model, ModelAttr, Preset, TemplateVars } from '../types.js';
 
@@ -19,8 +19,8 @@ export async function addModelCommand(modelName: string, opts: AddModelOptions):
   const cwd = process.cwd();
   const preset = detectPreset(cwd);
   if (!preset) {
-    console.error(kleur.red('Not in a rune-scaffolded project.'));
-    console.error(kleur.dim('  No src/server.js or src/servers/local.js found.'));
+    error('Not in a rune-scaffolded project.');
+    hint('  No src/server.js or src/servers/local.js found.');
     process.exitCode = 1;
     return;
   }
@@ -30,14 +30,14 @@ export async function addModelCommand(modelName: string, opts: AddModelOptions):
 
   const newModelPath = resolve(cwd, `src/models/${fileName}.js`);
   if (existsSync(newModelPath)) {
-    console.error(kleur.red(`Already exists: src/models/${fileName}.js`));
+    error(`Already exists: src/models/${fileName}.js`);
     process.exitCode = 1;
     return;
   }
 
   const newPromptPath = resolve(cwd, `src/prompts/${fileName}-prompt.js`);
   if (existsSync(newPromptPath)) {
-    console.error(kleur.red(`Already exists: src/prompts/${fileName}-prompt.js`));
+    error(`Already exists: src/prompts/${fileName}-prompt.js`);
     process.exitCode = 1;
     return;
   }
@@ -68,13 +68,13 @@ export async function addModelCommand(modelName: string, opts: AddModelOptions):
     vars,
   );
 
-  console.log(kleur.green(`✓ added model ${namePascal}`));
-  console.log(`  ${kleur.dim('+')} src/models/${fileName}.js`);
-  console.log(`  ${kleur.dim('+')} src/prompts/${fileName}-prompt.js`);
-  console.log(`  ${kleur.dim('~')} src/models/index.js`);
-  console.log(`  ${kleur.dim('~')} src/prompts/index.js`);
-  console.log();
-  console.log(kleur.dim(`Edit src/models/${fileName}.js to declare attributes.`));
+  ok(`added model ${namePascal}`);
+  listAdd(`src/models/${fileName}.js`);
+  listAdd(`src/prompts/${fileName}-prompt.js`);
+  listEdit('src/models/index.js');
+  listEdit('src/prompts/index.js');
+  space();
+  hint(`Edit src/models/${fileName}.js to declare attributes.`);
 }
 
 function detectPreset(cwd: string): Preset | null {

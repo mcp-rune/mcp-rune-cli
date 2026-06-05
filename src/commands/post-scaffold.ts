@@ -1,5 +1,5 @@
 import { execa } from 'execa';
-import kleur from 'kleur';
+import { done, hint, notice } from '../core/output.js';
 
 export interface PostScaffoldOptions {
   install: boolean;
@@ -10,19 +10,19 @@ export async function postScaffold(cwd: string, opts: PostScaffoldOptions): Prom
   if (opts.git) {
     try {
       await execa('git', ['init', '--quiet'], { cwd });
-      console.log(kleur.cyan('✓') + ' initialized git repo');
+      done('initialized git repo');
     } catch (err) {
-      console.warn(kleur.yellow(`! git init failed: ${(err as Error).message}`));
+      notice(`git init failed: ${(err as Error).message}`);
     }
   }
 
   if (opts.install) {
-    console.log(kleur.dim('    running npm install…'));
+    hint('    running npm install…');
     try {
       await execa('npm', ['install'], { cwd, stdio: 'inherit' });
-      console.log(kleur.cyan('✓') + ' installed dependencies');
+      done('installed dependencies');
     } catch (err) {
-      console.warn(kleur.yellow(`! npm install failed: ${(err as Error).message}`));
+      notice(`npm install failed: ${(err as Error).message}`);
     }
   }
 }

@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import kleur from 'kleur';
+import { hint } from '../core/output.js';
 
 export interface InspectCommandOptions {
   transport?: 'stdio' | 'http';
@@ -72,10 +72,10 @@ export async function inspectCommand(opts: InspectCommandOptions): Promise<void>
       : [INSPECTOR_PKG, '--url', detected.url];
 
   if (detected.kind === 'stdio') {
-    console.log(kleur.dim(`  launching inspector against ${detected.serverPath}`));
+    hint(`  launching inspector against ${detected.serverPath}`);
   } else {
-    console.log(kleur.dim(`  connecting inspector to ${detected.url}`));
-    console.log(kleur.dim('  the server must be running — start it with npm run start:remote'));
+    hint(`  connecting inspector to ${detected.url}`);
+    hint('  the server must be running — start it with npm run start:remote');
   }
 
   await new Promise<void>((resolvePromise, rejectPromise) => {
