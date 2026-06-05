@@ -1,19 +1,20 @@
-import { TEMPLATE_REGISTRY } from '../../../templates/registry.js';
 import { bailIfCancel } from '../../../core/cancel.js';
 import { select } from '../../../core/prompts.js';
+import { TEMPLATE_REGISTRY } from '../../../templates/registry.js';
+import type { Preset } from '../../../types.js';
 import type { NewContext } from '../context.js';
 
-type Ctx = Pick<NewContext, 'scaffoldMode' | 'template' | 'yes'>;
+type Ctx = Pick<NewContext, 'scaffoldMode' | 'template' | 'preset' | 'yes'>;
+
+type ModeChoice = 'quick' | 'customize' | 'template';
 
 const TEMPLATE_DESCRIPTIONS: Record<string, string> = {
-  bookshelf: 'Full mcp-rune surface — apps, tools, prompts, GraphRAG. In-memory adapter, zero setup.',
-  tasks: 'Three models (project, task, tag) with belongsTo + hasMany. Shows the polymorphic tool surface.',
-  'bookshelf-rest':
-    'Same Book model as bookshelf but backed by a real Express + fetch adapter. Adapter-swap demo.',
-  'bookshelf-graph':
-    'GraphRAG-focused: pgvector + DomainRegistry + 500-book graph fixture pre-wired for every summary strategy.',
-  'bookshelf-remote':
-    'HttpServer with static-token auth (OAuth path documented). Remote MCP transport.',
+  bookshelf:
+    'Full mcp-rune surface — apps, tools, prompts, GraphRAG. In-memory adapter, zero setup.',
+  tasks: 'Three models (project, task, tag) with belongsTo + hasMany.',
+  'bookshelf-rest': 'Bookshelf backed by a real Express + fetch adapter.',
+  'bookshelf-graph': 'GraphRAG-focused: pgvector + DomainRegistry + 500-book fixture.',
+  'bookshelf-remote': 'HttpServer with static-token auth (OAuth path documented).',
 };
 
 export async function scaffoldMode(ctx: Ctx): Promise<void> {
@@ -23,18 +24,26 @@ export async function scaffoldMode(ctx: Ctx): Promise<void> {
     return;
   }
 
-  const kind = await select<'preset' | 'template'>({
+  const mode = await select<ModeChoice>({
     message: 'How would you like to start?',
     options: [
-      { value: 'preset', label: 'From scratch — pick a preset and configure' },
-      { value: 'template', label: 'From an example — clone a runnable template' },
+      { value: 'quick', label: 'Quick start — recommended defaults (preset: simple)' },
+      { value: 'customize', label: 'Customize — pick every preset option (advanced)' },
+      { value: 'template', label: 'From an example template — clone a runnable repo' },
     ],
-    initialValue: 'preset',
+    initialValue: 'quick',
   });
-  bailIfCancel(kind);
+  bailIfCancel(mode);
 
-  if (kind === 'preset') {
+  if (mode === 'quick') {
     ctx.scaffoldMode = 'preset';
+    ctx.preset = 'simple' satisfies Preset;
+    return;
+  }
+
+  if (mode === 'customize') {
+    ctx.scaffoldMode = 'preset';
+    ctx.preset = 'advanced' satisfies Preset;
     return;
   }
 

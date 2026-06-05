@@ -1,4 +1,4 @@
-import { accent, brand, fail, muted, strong, success, warn } from './color.js';
+import { accent, brand, chip, fail, muted, strong, success, warn } from './color.js';
 
 export function info(msg: string): void {
   console.log(msg);
@@ -47,3 +47,15 @@ export function listEdit(path: string): void {
 export function scaffoldHeader(project: string, suffix: string): void {
   console.log(`${strong('Scaffolding ')}${brand(strong(project))} ${muted(`(${suffix})…`)}`);
 }
+
+export interface BannerInput {
+  version: string;
+  charm: string;
+  welcome: string;
+}
+
+export function banner({ version, charm, welcome }: BannerInput): void {
+  console.log();
+  console.log(`${chip('rune')} ${brand(`v${version}`)}  ${muted(charm)}  ${welcome}`);
+}
+

@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] - 2026-06-05
+
+### Added
+
+- **Mascot personality (`src/data/mascot.ts`)** — `pickMascot({ now?, seed? })` returns `{ welcome, signoff, charm, sigil }` for the rune banner and outro. Seasonal flavour: default lines year-round, winter set in Dec/Jan, launch-week set in the first week of November. Picked once at startup and frozen on `ctx`.
+- **Banner (`core/output.banner()`)** — single-line chip + version + mascot welcome shown before the wizard. Suppressed by `--skip-mascot`, auto-skipped under `CI=1`/`CI=true`, on non-TTY stdout, and on Windows without `--fancy`.
+- **Quick / Customize / Template fork** — `actions/scaffold-mode.ts` now offers three options on the first interactive prompt:
+  - *Quick start* (recommended) → preset `simple`, no further preset prompts.
+  - *Customize* → preset `advanced`, full wizard.
+  - *From an example template* → existing template registry picker.
+- **Pre-scaffold summary screen (`actions/summary.ts`)** — boxed recap of every resolved field (project, target dir, preset/source, transport, auth, API convention/client, search adapter, logger, error tracking, tracing, analysis/domain toggles, models, post-scaffold steps) plus a `Proceed?` confirm. Skipped when `--yes`. Under `--dry-run` it prints the panel and continues without asking.
+- **Boxed outro card (`actions/next-steps.ts`)** — replaces the bare `Next steps:` header with a green `boxen` panel listing `cd`, run, `rune inspect` nudge, and a clickable docs link via `terminal-link`. Appends a mascot signoff line when the mascot is on.
+- **Flags on `rune new`**: `--skip-mascot`, `--fancy`.
+- **Tests**: `__tests__/data/mascot.spec.ts` (4 cases — shape, deterministic seed, winter season, launch-week season).
+
+### Changed
+
+- **`NewContext`** gained `skipMascot`, `mascot`, `cliVersion`. `buildNewContext()` now takes a third `meta` arg for the version; `index.ts` reads it from `package.json`.
+- The `STEPS[]` pipeline now starts with `intro` and inserts `summary` between the prompts and the I/O actions.
+
+Phase 4 of [#4](https://github.com/mcp-rune/mcp-rune-cli/issues/4). The visible-polish phase — this is the create-astro-class feel.
+
 ## [0.5.0] - 2026-06-05
 
 ### Added
@@ -79,6 +101,7 @@ This is Phase 1 of [#4](https://github.com/mcp-rune/mcp-rune-cli/issues/4) — l
 - `rune doctor` — local environment checks (Node version, Docker, pg client, etc.) with `-p, --project [path]` to also validate a scaffolded project's schemas.
 - `rune db up` — brings the analysis-module Postgres up via `docker compose` and runs migrations.
 
+[0.6.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.2.0...v0.3.0
