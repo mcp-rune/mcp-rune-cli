@@ -7,7 +7,13 @@ import type { NewContext } from '../context.js';
 
 type Ctx = Pick<
   NewContext,
-  'scaffoldMode' | 'template' | 'offlineTemplate' | 'targetDir' | 'mcpRuneVersion' | 'tasks'
+  | 'scaffoldMode'
+  | 'projectName'
+  | 'template'
+  | 'offlineTemplate'
+  | 'targetDir'
+  | 'mcpRuneVersion'
+  | 'tasks'
 >;
 
 export async function fetchTemplate(ctx: Ctx): Promise<void> {
@@ -22,7 +28,10 @@ export async function fetchTemplate(ctx: Ctx): Promise<void> {
       } else {
         await copyOfflineTemplate(c.offlineTemplate!, c.targetDir);
       }
-      await applyTemplateOverrides(c.targetDir, { mcpRuneVersionOverride: c.mcpRuneVersion });
+      await applyTemplateOverrides(c.targetDir, {
+        projectName: c.projectName,
+        mcpRuneVersionOverride: c.mcpRuneVersion,
+      });
     },
   });
 }
