@@ -20,7 +20,7 @@ export default defineConfig({
         'vitest.config.js',
         'bin/**',
         'scripts/**',
-        'src/commands/post-scaffold.js',
+        'src/commands/new/actions/post-scaffold.js',
         'src/commands/db-up.js',
       ],
     },
