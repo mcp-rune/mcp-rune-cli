@@ -36,8 +36,12 @@ function exec(cmd: string, args: string[], cwd: string): { stdout: string; statu
 }
 
 describe.runIf(canRun())('scaffold typecheck smoke', () => {
-  const presets: Array<{
-    name: 'simple' | 'advanced'
+  // Cover every transport variant: stdio-only emits no remote.ts, http-only
+  // emits no local.ts, both emits both. A regression in the conditional
+  // `__only_if_hasHttp__` / `__only_if_hasStdio__` directories would slip
+  // past a single-variant smoke.
+  const variants: Array<{
+    name: string
     answers: Parameters<typeof resolveAnswers>[0]
   }> = [
     {
@@ -45,21 +49,40 @@ describe.runIf(canRun())('scaffold typecheck smoke', () => {
       answers: { projectName: 'smoke-simple', preset: 'simple', models: 'Book' }
     },
     {
-      name: 'advanced',
+      name: 'advanced-stdio',
       answers: {
-        projectName: 'smoke-advanced',
+        projectName: 'smoke-advanced-stdio',
         preset: 'advanced',
         models: 'Book',
         transport: 'stdio'
       }
+    },
+    {
+      name: 'advanced-http',
+      answers: {
+        projectName: 'smoke-advanced-http',
+        preset: 'advanced',
+        models: 'Book',
+        transport: 'http'
+      }
+    },
+    {
+      name: 'advanced-both',
+      answers: {
+        projectName: 'smoke-advanced-both',
+        preset: 'advanced',
+        models: 'Book',
+        transport: 'both'
+      }
     }
   ]
 
-  for (const { name, answers } of presets) {
-    it(`${name} preset compiles cleanly with tsc --noEmit`, async () => {
+  for (const { name, answers } of variants) {
+    const presetDir = answers.preset ?? 'simple'
+    it(`${name} variant compiles cleanly with tsc --noEmit`, async () => {
       const outDir = mkdtempSync(join(tmpdir(), `rune-tc-${name}-`))
       try {
-        const templateUrl = new URL(`templates/${name}/`, REPO_ROOT)
+        const templateUrl = new URL(`templates/${presetDir}/`, REPO_ROOT)
         await renderTemplate(templateUrl, outDir, resolveAnswers(answers))
 
         // .npmrc in the scaffold already maps the @mcp-rune scope to

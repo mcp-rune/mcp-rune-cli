@@ -17,6 +17,13 @@ on:
     branches: [main]
     tags: ['v*']
 
+# Opt every job into Node 24 for the actions themselves (checkout, setup-node)
+# so the GitHub Actions runtime stops printing the Node 20 deprecation warning
+# on every job. The `with: node-version: 24` already sets the *workflow's* Node,
+# but composite actions still run under Node 20 by default until 2026-09-16.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
   ci:
     runs-on: ubuntu-latest
