@@ -1,0 +1,26 @@
+import {
+  BasePrompt,
+  derivePromptSchema,
+  PromptContentGenerator
+} from '@mcp-rune/mcp-rune/prompts'
+
+import { <%= model.namePascal %> } from '../models/<%= model.fileName %>.js'
+
+export class <%= model.namePascal %>Prompt extends BasePrompt {
+  static override strategy = 'hybrid' as const
+
+  static {
+    const schema = derivePromptSchema(<%= model.namePascal %>)
+    this.fieldGroups = schema.fieldGroups
+    this.fieldDefinitions = schema.fieldDefinitions
+  }
+
+  override get promptContent(): string {
+    return PromptContentGenerator.for(<%= model.namePascal %>Prompt, '<%= model.fileName %>')
+      .add('# <%= model.namePascal %> guide')
+      .standard()
+      .toolUsage()
+      .attributeReference()
+      .build()
+  }
+}

@@ -20,7 +20,7 @@ export async function addModelCommand(modelName: string, opts: AddModelOptions):
   const preset = detectPreset(cwd);
   if (!preset) {
     error('Not in a rune-scaffolded project.');
-    hint('  No src/server.js or src/servers/local.js found.');
+    hint('  No src/server.ts or src/servers/local.ts found.');
     process.exitCode = 1;
     return;
   }
@@ -28,16 +28,16 @@ export async function addModelCommand(modelName: string, opts: AddModelOptions):
   const fileName = modelName.toLowerCase();
   const namePascal = pascal(modelName);
 
-  const newModelPath = resolve(cwd, `src/models/${fileName}.js`);
+  const newModelPath = resolve(cwd, `src/models/${fileName}.ts`);
   if (existsSync(newModelPath)) {
-    error(`Already exists: src/models/${fileName}.js`);
+    error(`Already exists: src/models/${fileName}.ts`);
     process.exitCode = 1;
     return;
   }
 
-  const newPromptPath = resolve(cwd, `src/prompts/${fileName}-prompt.js`);
+  const newPromptPath = resolve(cwd, `src/prompts/${fileName}-prompt.ts`);
   if (existsSync(newPromptPath)) {
-    error(`Already exists: src/prompts/${fileName}-prompt.js`);
+    error(`Already exists: src/prompts/${fileName}-prompt.ts`);
     process.exitCode = 1;
     return;
   }
@@ -49,37 +49,37 @@ export async function addModelCommand(modelName: string, opts: AddModelOptions):
   const vars = makeVars(cwd, preset, allModels);
   const templateRoot = fileURLToPath(new URL(`../../templates/${preset}/`, import.meta.url));
 
-  await renderEjs(resolve(templateRoot, 'src/models/_model_.js.ejs'), newModelPath, {
+  await renderEjs(resolve(templateRoot, 'src/models/_model_.ts.ejs'), newModelPath, {
     ...vars,
     model: newModel,
   });
-  await renderEjs(resolve(templateRoot, 'src/prompts/_model_-prompt.js.ejs'), newPromptPath, {
+  await renderEjs(resolve(templateRoot, 'src/prompts/_model_-prompt.ts.ejs'), newPromptPath, {
     ...vars,
     model: newModel,
   });
   await renderEjs(
-    resolve(templateRoot, 'src/models/index.js.ejs'),
-    resolve(cwd, 'src/models/index.js'),
+    resolve(templateRoot, 'src/models/index.ts.ejs'),
+    resolve(cwd, 'src/models/index.ts'),
     vars,
   );
   await renderEjs(
-    resolve(templateRoot, 'src/prompts/index.js.ejs'),
-    resolve(cwd, 'src/prompts/index.js'),
+    resolve(templateRoot, 'src/prompts/index.ts.ejs'),
+    resolve(cwd, 'src/prompts/index.ts'),
     vars,
   );
 
   ok(`added model ${namePascal}`);
-  listAdd(`src/models/${fileName}.js`);
-  listAdd(`src/prompts/${fileName}-prompt.js`);
-  listEdit('src/models/index.js');
-  listEdit('src/prompts/index.js');
+  listAdd(`src/models/${fileName}.ts`);
+  listAdd(`src/prompts/${fileName}-prompt.ts`);
+  listEdit('src/models/index.ts');
+  listEdit('src/prompts/index.ts');
   space();
-  hint(`Edit src/models/${fileName}.js to declare attributes.`);
+  hint(`Edit src/models/${fileName}.ts to declare attributes.`);
 }
 
 function detectPreset(cwd: string): Preset | null {
-  if (existsSync(resolve(cwd, 'src/servers/local.js'))) return 'advanced';
-  if (existsSync(resolve(cwd, 'src/server.js'))) return 'simple';
+  if (existsSync(resolve(cwd, 'src/servers/local.ts'))) return 'advanced';
+  if (existsSync(resolve(cwd, 'src/server.ts'))) return 'simple';
   return null;
 }
 
@@ -87,8 +87,8 @@ function collectExistingModels(cwd: string): Model[] {
   const modelsDir = resolve(cwd, 'src/models');
   if (!existsSync(modelsDir)) return [];
   return readdirSync(modelsDir)
-    .filter((f) => f.endsWith('.js') && f !== 'index.js')
-    .map((f) => f.replace(/\.js$/, ''))
+    .filter((f) => f.endsWith('.ts') && f !== 'index.ts')
+    .map((f) => f.replace(/\.ts$/, ''))
     .map((fileName) => makeModel(fileName));
 }
 
@@ -136,7 +136,7 @@ function makeVars(cwd: string, preset: Preset, models: Model[]): TemplateVars {
     usePinoLogger: false,
     useSentry: false,
     useLangfuse: false,
-    mcpRuneVersion: pkg.dependencies?.['@mcp-rune/mcp-rune'] ?? '^0.41.0',
+    mcpRuneVersion: pkg.dependencies?.['@mcp-rune/mcp-rune'] ?? '^0.73.8',
     nodeEngine: '>=24.0.0',
   };
 }

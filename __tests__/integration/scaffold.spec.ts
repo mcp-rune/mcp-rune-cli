@@ -30,8 +30,8 @@ describe('simple preset', () => {
     await renderTemplate(templateUrl, outDir, ans);
 
     expect(existsSync(join(outDir, 'package.json'))).toBe(true);
-    expect(existsSync(join(outDir, 'src/server.js'))).toBe(true);
-    expect(existsSync(join(outDir, 'src/config.js'))).toBe(true);
+    expect(existsSync(join(outDir, 'src/server.ts'))).toBe(true);
+    expect(existsSync(join(outDir, 'src/config.ts'))).toBe(true);
     expect(existsSync(join(outDir, '.npmrc'))).toBe(true);
     expect(existsSync(join(outDir, '.env.example'))).toBe(true);
   });
@@ -62,12 +62,12 @@ describe('simple preset', () => {
     outDir = dir;
     await renderTemplate(templateUrl, outDir, ans);
 
-    expect(existsSync(join(outDir, 'src/models/book.js'))).toBe(true);
-    expect(existsSync(join(outDir, 'src/models/theme.js'))).toBe(true);
-    expect(existsSync(join(outDir, 'src/prompts/book-prompt.js'))).toBe(true);
-    expect(existsSync(join(outDir, 'src/prompts/theme-prompt.js'))).toBe(true);
+    expect(existsSync(join(outDir, 'src/models/book.ts'))).toBe(true);
+    expect(existsSync(join(outDir, 'src/models/theme.ts'))).toBe(true);
+    expect(existsSync(join(outDir, 'src/prompts/book-prompt.ts'))).toBe(true);
+    expect(existsSync(join(outDir, 'src/prompts/theme-prompt.ts'))).toBe(true);
 
-    const index = readFileSync(join(outDir, 'src/models/index.js'), 'utf8');
+    const index = readFileSync(join(outDir, 'src/models/index.ts'), 'utf8');
     expect(index).toContain("import { Book } from './book.js'");
     expect(index).toContain("import { Theme } from './theme.js'");
     expect(index).toContain('MODEL_CLASSES');
@@ -86,12 +86,12 @@ describe('advanced preset', () => {
     outDir = dir;
     await renderTemplate(templateUrl, outDir, ans);
 
-    expect(existsSync(join(outDir, 'src/servers/local.js'))).toBe(true);
-    expect(existsSync(join(outDir, 'src/servers/remote.js'))).toBe(true);
-    expect(existsSync(join(outDir, 'src/profiles.js'))).toBe(true);
-    expect(existsSync(join(outDir, 'src/db.js'))).toBe(true);
-    expect(existsSync(join(outDir, 'config/schema.js'))).toBe(true);
-    expect(existsSync(join(outDir, 'src/prompts/registry.js'))).toBe(true);
+    expect(existsSync(join(outDir, 'src/servers/local.ts'))).toBe(true);
+    expect(existsSync(join(outDir, 'src/servers/remote.ts'))).toBe(true);
+    expect(existsSync(join(outDir, 'src/profiles.ts'))).toBe(true);
+    expect(existsSync(join(outDir, 'src/db.ts'))).toBe(true);
+    expect(existsSync(join(outDir, 'config/schema.ts'))).toBe(true);
+    expect(existsSync(join(outDir, 'src/prompts/index.ts'))).toBe(true);
   });
 
   it('omits docker-compose and domain dir without their flags', async () => {
@@ -100,7 +100,7 @@ describe('advanced preset', () => {
     await renderTemplate(templateUrl, outDir, ans);
 
     expect(existsSync(join(outDir, 'docker-compose.yml'))).toBe(false);
-    expect(existsSync(join(outDir, 'src/domain/registry.js'))).toBe(false);
+    expect(existsSync(join(outDir, 'src/domain/registry.ts'))).toBe(false);
   });
 
   it('emits docker-compose.yml with --with-analysis', async () => {
@@ -113,12 +113,12 @@ describe('advanced preset', () => {
     expect(compose).toContain('pgvector');
   });
 
-  it('emits src/domain/registry.js with --with-domain', async () => {
+  it('emits src/domain/registry.ts with --with-domain', async () => {
     const { outDir: dir, templateUrl, ans } = scaffold('advanced', { withDomain: true });
     outDir = dir;
     await renderTemplate(templateUrl, outDir, ans);
 
-    expect(existsSync(join(outDir, 'src/domain/registry.js'))).toBe(true);
+    expect(existsSync(join(outDir, 'src/domain/registry.ts'))).toBe(true);
   });
 
   it('writes a config schema including OAuth when transport has http', async () => {
@@ -126,7 +126,7 @@ describe('advanced preset', () => {
     outDir = dir;
     await renderTemplate(templateUrl, outDir, ans);
 
-    const schema = readFileSync(join(outDir, 'config/schema.js'), 'utf8');
+    const schema = readFileSync(join(outDir, 'config/schema.ts'), 'utf8');
     expect(schema).toContain('oauth');
     expect(schema).toContain('OAUTH_CLIENT_ID');
   });
@@ -136,7 +136,7 @@ describe('advanced preset', () => {
     outDir = dir;
     await renderTemplate(templateUrl, outDir, ans);
 
-    const schema = readFileSync(join(outDir, 'config/schema.js'), 'utf8');
+    const schema = readFileSync(join(outDir, 'config/schema.ts'), 'utf8');
     expect(schema).not.toContain('OAUTH_CLIENT_ID');
   });
 
@@ -147,8 +147,8 @@ describe('advanced preset', () => {
     outDir = dir;
     await renderTemplate(templateUrl, outDir, ans);
 
-    expect(existsSync(join(outDir, 'src/conventions/flat-rest-convention.js'))).toBe(true);
-    const tools = readFileSync(join(outDir, 'src/tools/index.js'), 'utf8');
+    expect(existsSync(join(outDir, 'src/conventions/flat-rest-convention.ts'))).toBe(true);
+    const tools = readFileSync(join(outDir, 'src/tools/index.ts'), 'utf8');
     expect(tools).toContain("from '../conventions/flat-rest-convention.js'");
   });
 
@@ -157,8 +157,8 @@ describe('advanced preset', () => {
     outDir = dir;
     await renderTemplate(templateUrl, outDir, ans);
 
-    expect(existsSync(join(outDir, 'src/api/fetch-client.js'))).toBe(true);
-    const tools = readFileSync(join(outDir, 'src/tools/index.js'), 'utf8');
+    expect(existsSync(join(outDir, 'src/api/fetch-client.ts'))).toBe(true);
+    const tools = readFileSync(join(outDir, 'src/tools/index.ts'), 'utf8');
     expect(tools).toContain('new FetchApiClient');
     expect(tools).not.toContain('inject your API client here');
   });
@@ -171,11 +171,11 @@ describe('advanced preset', () => {
     outDir = dir;
     await renderTemplate(templateUrl, outDir, ans);
 
-    const remote = readFileSync(join(outDir, 'src/servers/remote.js'), 'utf8');
+    const remote = readFileSync(join(outDir, 'src/servers/remote.ts'), 'utf8');
     expect(remote).toContain('accessToken: config.transport.remote.accessToken');
     expect(remote).not.toContain('createOAuthService');
 
-    const schema = readFileSync(join(outDir, 'config/schema.js'), 'utf8');
+    const schema = readFileSync(join(outDir, 'config/schema.ts'), 'utf8');
     expect(schema).not.toContain('OAUTH_CLIENT_ID');
     expect(schema).toContain('HTTP_ACCESS_TOKEN');
   });
@@ -187,8 +187,8 @@ describe('advanced preset', () => {
     outDir = dir;
     await renderTemplate(templateUrl, outDir, ans);
 
-    expect(existsSync(join(outDir, 'src/api-extensions/ransack-search-adapter.js'))).toBe(true);
-    const tools = readFileSync(join(outDir, 'src/tools/index.js'), 'utf8');
+    expect(existsSync(join(outDir, 'src/api-extensions/ransack-search-adapter.ts'))).toBe(true);
+    const tools = readFileSync(join(outDir, 'src/tools/index.ts'), 'utf8');
     expect(tools).toContain('ransackSearchAdapter');
   });
 
@@ -197,8 +197,8 @@ describe('advanced preset', () => {
     outDir = dir;
     await renderTemplate(templateUrl, outDir, ans);
 
-    expect(existsSync(join(outDir, 'src/observability/logger.js'))).toBe(true);
-    const cfg = readFileSync(join(outDir, 'src/config.js'), 'utf8');
+    expect(existsSync(join(outDir, 'src/observability/logger.ts'))).toBe(true);
+    const cfg = readFileSync(join(outDir, 'src/config.ts'), 'utf8');
     expect(cfg).toContain("from './observability/logger.js'");
 
     const pkg = JSON.parse(readFileSync(join(outDir, 'package.json'), 'utf8'));

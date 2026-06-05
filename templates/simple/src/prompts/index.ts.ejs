@@ -1,0 +1,18 @@
+import { BasePromptRegistry } from '@mcp-rune/mcp-rune/prompts'
+
+<% for (const m of models) { -%>
+import { <%= m.namePascal %> } from '../models/<%= m.fileName %>.js'
+<% } -%>
+<% for (const m of models) { -%>
+import { <%= m.namePascal %>Prompt } from './<%= m.fileName %>-prompt.js'
+<% } -%>
+
+export const promptRegistry = new BasePromptRegistry()
+
+<% for (const m of models) { -%>
+promptRegistry.register('<%= m.fileName %>', <%= m.namePascal %>Prompt, {
+  description: <%= m.namePascal %>.description,
+  required: true,
+  model: '<%= m.fileName %>'
+})
+<% } -%>

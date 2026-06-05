@@ -49,17 +49,17 @@ describe('addModelCommand', () => {
 
       await addModelCommand('Article', { attrs: 'title:string,body:text' });
 
-      expect(existsSync(join(projectDir, 'src/models/article.js'))).toBe(true);
-      expect(existsSync(join(projectDir, 'src/prompts/article-prompt.js'))).toBe(true);
+      expect(existsSync(join(projectDir, 'src/models/article.ts'))).toBe(true);
+      expect(existsSync(join(projectDir, 'src/prompts/article-prompt.ts'))).toBe(true);
 
-      const model = readFileSync(join(projectDir, 'src/models/article.js'), 'utf8');
+      const model = readFileSync(join(projectDir, 'src/models/article.ts'), 'utf8');
       expect(model).toContain('export class Article');
       expect(model).toContain("title:");
       expect(model).toContain("type: 'string'");
       expect(model).toContain("body:");
       expect(model).toContain("type: 'text'");
 
-      const index = readFileSync(join(projectDir, 'src/models/index.js'), 'utf8');
+      const index = readFileSync(join(projectDir, 'src/models/index.ts'), 'utf8');
       expect(index).toContain("import { Book } from './book.js'");
       expect(index).toContain("import { Article } from './article.js'");
       expect(index).toContain('article: Article');
@@ -86,16 +86,16 @@ describe('addModelCommand', () => {
   });
 
   describe('in an advanced project', () => {
-    it('re-renders the richer prompts/index.js using PromptRegistry', async () => {
+    it('re-renders the richer prompts/index.ts using BasePromptRegistry', async () => {
       projectDir = await seedProject('advanced');
       process.chdir(projectDir);
 
       await addModelCommand('Theme', {});
 
-      const promptsIndex = readFileSync(join(projectDir, 'src/prompts/index.js'), 'utf8');
-      expect(promptsIndex).toContain('PromptRegistry');
-      expect(promptsIndex).toContain('create_book');
-      expect(promptsIndex).toContain('create_theme');
+      const promptsIndex = readFileSync(join(projectDir, 'src/prompts/index.ts'), 'utf8');
+      expect(promptsIndex).toContain('BasePromptRegistry');
+      expect(promptsIndex).toContain("'create_book'");
+      expect(promptsIndex).toContain("'create_theme'");
     });
   });
 });

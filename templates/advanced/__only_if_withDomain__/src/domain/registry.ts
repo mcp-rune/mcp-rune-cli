@@ -7,16 +7,21 @@
  * `check_business_rules`).
  */
 
-import { DomainRegistry, WorkflowRegistry, RuleSet, DomainKnowledge } from '@mcp-rune/mcp-rune/domain';
+import {
+  DomainKnowledge,
+  DomainRegistry,
+  RuleSet,
+  WorkflowRegistry
+} from '@mcp-rune/mcp-rune/domain'
 
-export function createDomainRegistry() {
+export function createDomainRegistry(): DomainRegistry {
   const workflows = new WorkflowRegistry([
     // ...spread workflow arrays imported from ./workflows/
-  ]);
+  ])
 
   return new DomainRegistry({
     knowledge: new DomainKnowledge(),
     rules: new RuleSet(),
-    workflows,
-  });
+    workflows
+  })
 }

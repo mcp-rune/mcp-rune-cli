@@ -1,0 +1,108 @@
+/**
+ * Tool registry — wraps the library's `ToolRegistry` with an active-profile
+ * filter (MCP_PROFILE) so deployments can expose a narrower tool surface
+ * than the full set without touching the registry plumbing.
+ *
+ * The library's `ToolRegistry` already handles capability gating:
+ *   - `requiresVectorStorage`: skipped when vector storage isn't configured.
+ *   - `requiresDomainRegistry`: skipped when no `domainRegistry` is passed.
+ *   - `requiresPromptRegistry`: skipped when no `promptRegistry` is passed.
+ * The profile filter layers on top of that with per-deployment allow/deny lists.
+ */
+
+import type { ApiClient } from '@mcp-rune/mcp-rune/core'
+import type { DomainRegistry } from '@mcp-rune/mcp-rune/domain'
+import { STRATEGY_TOOL_CLASSES } from '@mcp-rune/mcp-rune/prompts'
+import type { PromptRegistry } from '@mcp-rune/mcp-rune/prompts'
+import { vectorStorage } from '@mcp-rune/mcp-rune/services'
+import type { ModelsRegistry, ServerContext, ToolClassMap } from '@mcp-rune/mcp-rune/tools'
+import {
+  ANALYSIS_TOOL_CLASSES,
+  DATA_TOOL_CLASSES,
+  DOMAIN_TOOL_CLASSES,
+  OPERATIONS_TOOL_CLASSES,
+  ToolRegistry
+} from '@mcp-rune/mcp-rune/tools'
+
+<% if (useFetchClient) { -%>
+import { FetchApiClient } from '../api/fetch-client.js'
+<% } -%>
+<% if (useFlatRestConvention) { -%>
+import { flatRestConvention } from '../conventions/flat-rest-convention.js'
+<% } -%>
+<% if (useRansackSearch) { -%>
+import { ransackSearchAdapter } from '../api-extensions/ransack-search-adapter.js'
+<% } -%>
+
+const ALL_TOOL_CLASSES: ToolClassMap = {
+  ...STRATEGY_TOOL_CLASSES,
+  ...DATA_TOOL_CLASSES,
+  ...ANALYSIS_TOOL_CLASSES,
+  ...OPERATIONS_TOOL_CLASSES,
+  ...DOMAIN_TOOL_CLASSES
+}
+
+export interface Profile {
+  tools?: string[] | null
+  toolsExclude?: string[] | null
+}
+
+export interface CreateToolRegistryDeps {
+  logger: {
+    info(message: string, meta?: Record<string, unknown>): void
+    warn(message: string, meta?: Record<string, unknown>): void
+    error(message: string, meta?: Record<string, unknown>): void
+    debug(message: string, meta?: Record<string, unknown>): void
+  }
+  models: ModelsRegistry
+  promptRegistry: PromptRegistry
+  serverContext: ServerContext
+  domainRegistry: DomainRegistry | null
+  apiUrl: string
+  profile: Profile
+}
+
+function selectToolClasses(profile: Profile): ToolClassMap {
+  const all = Object.keys(ALL_TOOL_CLASSES)
+  const allow = profile.tools ? new Set(profile.tools) : null
+  const deny = profile.toolsExclude ? new Set(profile.toolsExclude) : null
+  const selected: ToolClassMap = {}
+  for (const name of all) {
+    if (allow && !allow.has(name)) continue
+    if (deny?.has(name)) continue
+    selected[name] = ALL_TOOL_CLASSES[name]!
+  }
+  return selected
+}
+
+export function createToolRegistry(deps: CreateToolRegistryDeps): ToolRegistry {
+  const createApiClient = (token: string): ApiClient => {
+<% if (useFetchClient) { -%>
+    return new FetchApiClient({
+      baseUrl: deps.apiUrl,
+      accessToken: token<% if (useFlatRestConvention) { %>,
+      convention: flatRestConvention<% } %>
+    })
+<% } else { -%>
+    // TODO: replace with your real ApiClient. The Proxy makes a missing
+    // implementation fail loudly instead of silently no-oping.
+    return new Proxy({} as ApiClient, {
+      get() {
+        throw new Error(
+          `No ApiClient configured (token=${token.slice(0, 4)}…). Wire createApiClient in src/tools/index.ts.`
+        )
+      }
+    })
+<% } -%>
+  }
+
+  return new ToolRegistry({
+    toolClasses: selectToolClasses(deps.profile),
+    models: deps.models,
+    serverContext: deps.serverContext,
+    promptRegistry: deps.promptRegistry,
+    domainRegistry: deps.domainRegistry ?? undefined,
+    vectorStorageEnabled: vectorStorage.isVectorStorageEnabled(),
+    createApiClient
+  })
+}

@@ -5,6 +5,8 @@
  * at startup. Every env var read in the codebase should be declared here.
  */
 
+import type { ConfigSchema } from '@mcp-rune/mcp-rune/core'
+
 export const configSchema = {
   api: {
     url: {
@@ -121,4 +123,4 @@ export const configSchema = {
       doc: 'Langfuse secret key',
     },
   },
-};
+} satisfies ConfigSchema;

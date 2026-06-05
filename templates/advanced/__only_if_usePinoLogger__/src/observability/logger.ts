@@ -7,21 +7,23 @@
  * internally.
  */
 
-import pino from 'pino';
+import pino from 'pino'
+
+type LogMethod = 'info' | 'warn' | 'error' | 'debug'
 
 const base = pino({
   level: process.env.LOG_LEVEL ?? 'info',
   formatters: {
-    level(label) {
-      return { level: label };
-    },
-  },
-});
+    level(label: string): { level: string } {
+      return { level: label }
+    }
+  }
+})
 
-let appName = process.env.MCP_SERVER_NAME ?? 'app';
+let appName = process.env.MCP_SERVER_NAME ?? 'app'
 
-function withApp(method) {
-  return (message, meta = {}) => base[method]({ app: appName, ...meta }, message);
+function withApp(method: LogMethod): (message: string, meta?: Record<string, unknown>) => void {
+  return (message, meta = {}) => base[method]({ app: appName, ...meta }, message)
 }
 
 export const logger = {
@@ -29,7 +31,7 @@ export const logger = {
   warn: withApp('warn'),
   error: withApp('error'),
   debug: withApp('debug'),
-  setApp(name) {
-    appName = name;
-  },
-};
+  setApp(name: string): void {
+    appName = name
+  }
+}

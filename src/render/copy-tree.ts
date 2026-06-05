@@ -142,7 +142,7 @@ function makeVars(answers: Answers): TemplateVars {
     useSentry: answers.errorTracking === 'sentry',
     useLangfuse: answers.tracing === 'langfuse',
     models: normalizeModels(answers.models),
-    mcpRuneVersion: answers.mcpRuneVersion ?? '^0.41.0',
+    mcpRuneVersion: answers.mcpRuneVersion ?? '^0.73.8',
     nodeEngine: answers.nodeEngine ?? '>=24.0.0',
   };
 }

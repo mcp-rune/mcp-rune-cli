@@ -1,0 +1,25 @@
+import type { AttributeDefinition } from '@mcp-rune/mcp-rune/core'
+import { BaseModel } from '@mcp-rune/mcp-rune/core'
+
+export class <%= model.namePascal %> extends BaseModel {
+  static override description = '<%= model.description || `A ${model.name} record` %>'
+  static override api = { endpoint: '<%= model.endpoint || `${model.fileName}s` %>' }
+
+  static override attributes: Record<string, AttributeDefinition> = {
+<% for (const attr of model.attributes) { -%>
+    <%= attr.name %>: {
+      type: '<%= attr.type %>',
+<% if (attr.required) { -%>
+      required: true,
+<% } -%>
+<% if (attr.description) { -%>
+      description: '<%= attr.description %>',
+<% } -%>
+    },
+<% } -%>
+  }
+
+  static get attributesConfig(): Record<string, AttributeDefinition> {
+    return this.attributes
+  }
+}

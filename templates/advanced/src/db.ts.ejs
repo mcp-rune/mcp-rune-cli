@@ -1,0 +1,35 @@
+import pg from 'pg'
+
+type Pool = InstanceType<typeof pg.Pool>
+<% if (usePinoLogger) { -%>
+import { logger } from './observability/logger.js'
+<% } else { -%>
+import { logger } from '@mcp-rune/mcp-rune/services'
+<% } -%>
+
+let pool: Pool | null = null
+
+export function initDatabase(url: string | undefined): Pool | null {
+  if (pool) return pool
+  if (!url) return null
+
+  pool = new pg.Pool({
+    connectionString: url,
+    max: 5,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000
+  })
+  logger.info('Database pool created', { service: '<%= projectName %>-db' })
+  return pool
+}
+
+export function getPool(): Pool | null {
+  return pool
+}
+
+export async function closeDatabase(): Promise<void> {
+  if (!pool) return
+  await pool.end()
+  pool = null
+  logger.info('Database pool closed', { service: '<%= projectName %>-db' })
+}
