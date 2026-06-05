@@ -1,37 +1,38 @@
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { execa } from 'execa';
-import kleur from 'kleur';
+import { accent, fail, success } from '../core/color.js';
+import { error, ok, space, step } from '../core/output.js';
 
 export async function dbUpCommand(): Promise<void> {
   const cwd = process.cwd();
 
   if (!existsSync(resolve(cwd, 'docker-compose.yml'))) {
-    console.error(kleur.red('No docker-compose.yml in this directory.'));
+    error('No docker-compose.yml in this directory.');
     console.error(
-      `  Scaffold one with: ${kleur.cyan('rune new <name> --preset advanced --with-analysis')}`,
+      `  Scaffold one with: ${accent('rune new <name> --preset advanced --with-analysis')}`,
     );
     process.exitCode = 1;
     return;
   }
 
-  console.log(kleur.bold('▸ docker compose up -d db'));
+  step('docker compose up -d db');
   await execa('docker', ['compose', 'up', '-d', 'db'], { cwd, stdio: 'inherit' });
 
-  console.log(kleur.bold('▸ waiting for db to be healthy…'));
-  const ok = await waitForHealthy(cwd, 60_000);
-  if (!ok) {
-    console.error(kleur.red('  timed out — check `docker compose logs db`'));
+  step('waiting for db to be healthy…');
+  const okHealthy = await waitForHealthy(cwd, 60_000);
+  if (!okHealthy) {
+    console.error(fail('  timed out — check `docker compose logs db`'));
     process.exitCode = 1;
     return;
   }
-  console.log(kleur.green('  healthy'));
+  console.log(success('  healthy'));
 
-  console.log(kleur.bold('▸ npm run db:migrate'));
+  step('npm run db:migrate');
   await execa('npm', ['run', 'db:migrate'], { cwd, stdio: 'inherit' });
 
-  console.log();
-  console.log(kleur.green('✓ db is up; migrations applied'));
+  space();
+  ok('db is up; migrations applied');
 }
 
 async function waitForHealthy(cwd: string, timeoutMs: number): Promise<boolean> {

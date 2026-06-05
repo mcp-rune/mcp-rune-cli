@@ -1,7 +1,8 @@
 import { resolve, isAbsolute } from 'node:path';
 import { existsSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
-import kleur from 'kleur';
+import { link, muted } from '../core/color.js';
+import { done, heading, scaffoldHeader, space } from '../core/output.js';
 import type {
   ApiClientChoice,
   ApiConvention,
@@ -124,8 +125,8 @@ export async function newCommand(projectName: string, opts: NewCommandOptions): 
     git: opts.git !== false,
   });
 
-  console.log();
-  console.log(kleur.bold('Next steps:'));
+  space();
+  heading('Next steps:');
   console.log(`    cd ${projectName}`);
   if (opts.install === false) console.log('    npm install');
   if (effectiveOpts.template || effectiveOpts.offlineTemplate) {
@@ -174,27 +175,17 @@ async function scaffoldFromPreset(
 
   const answers = opts.yes ? resolveAnswers(flagAnswers) : await runWizard(flagAnswers);
 
-  console.log();
-  console.log(
-    kleur.bold('Scaffolding ') +
-      kleur.red().bold(answers.projectName) +
-      ' ' +
-      kleur.dim().italic(`(${answers.preset})…`),
-  );
+  space();
+  scaffoldHeader(answers.projectName, answers.preset);
   if (mcpRuneVersion) {
-    console.log(
-      '    ' +
-        kleur.blue('@mcp-rune/mcp-rune') +
-        kleur.dim(' → ') +
-        kleur.blue(mcpRuneVersion),
-    );
+    console.log(`    ${link('@mcp-rune/mcp-rune')}${muted(' → ')}${link(mcpRuneVersion)}`);
   }
-  console.log();
+  space();
 
   const templateDir = new URL(`../../templates/${answers.preset}/`, import.meta.url);
   await renderTemplate(templateDir, targetDir, answers);
 
-  console.log(kleur.cyan('✓') + ' wrote files to ' + kleur.blue(targetDir));
+  done(`wrote files to ${link(targetDir)}`);
 }
 
 async function scaffoldFromTemplate(
@@ -207,31 +198,16 @@ async function scaffoldFromTemplate(
     '../render/fetch-template.js'
   );
 
-  console.log();
+  space();
   if (opts.template) {
-    console.log(
-      kleur.bold('Scaffolding ') +
-        kleur.red().bold(projectName) +
-        ' ' +
-        kleur.dim().italic(`(from template ${opts.template})…`),
-    );
+    scaffoldHeader(projectName, `from template ${opts.template}`);
   } else {
-    console.log(
-      kleur.bold('Scaffolding ') +
-        kleur.red().bold(projectName) +
-        ' ' +
-        kleur.dim().italic(`(from local ${opts.offlineTemplate})…`),
-    );
+    scaffoldHeader(projectName, `from local ${opts.offlineTemplate}`);
   }
   if (mcpRuneVersion) {
-    console.log(
-      '    ' +
-        kleur.blue('@mcp-rune/mcp-rune') +
-        kleur.dim(' → ') +
-        kleur.blue(mcpRuneVersion),
-    );
+    console.log(`    ${link('@mcp-rune/mcp-rune')}${muted(' → ')}${link(mcpRuneVersion)}`);
   }
-  console.log();
+  space();
 
   if (opts.template) {
     await fetchTemplate(opts.template, targetDir);
@@ -241,5 +217,5 @@ async function scaffoldFromTemplate(
 
   await applyTemplateOverrides(targetDir, { mcpRuneVersionOverride: mcpRuneVersion });
 
-  console.log(kleur.cyan('✓') + ' wrote files to ' + kleur.blue(targetDir));
+  done(`wrote files to ${link(targetDir)}`);
 }
