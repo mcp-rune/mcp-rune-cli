@@ -1,5 +1,3 @@
-import { link } from '../../../core/color.js';
-import { done } from '../../../core/output.js';
 import { renderTemplate } from '../../../render/copy-tree.js';
 import { resolveAnswers } from '../presets.js';
 import type { NewContext } from '../context.js';
@@ -22,30 +20,34 @@ type Ctx = Pick<
   | 'tracing'
   | 'modelsRaw'
   | 'mcpRuneVersion'
+  | 'tasks'
 >;
 
 export async function render(ctx: Ctx): Promise<void> {
   if (ctx.scaffoldMode !== 'preset') return;
 
-  const answers = resolveAnswers({
-    projectName: ctx.projectName,
-    preset: ctx.preset,
-    transport: ctx.transport,
-    withAnalysis: ctx.withAnalysis,
-    withDomain: ctx.withDomain,
-    apiConvention: ctx.apiConvention,
-    apiClient: ctx.apiClient,
-    serverAuth: ctx.serverAuth,
-    searchAdapter: ctx.searchAdapter,
-    logger: ctx.logger,
-    errorTracking: ctx.errorTracking,
-    tracing: ctx.tracing,
-    models: ctx.modelsRaw,
-    mcpRuneVersion: ctx.mcpRuneVersion,
+  ctx.tasks.push({
+    start: 'Writing files',
+    end: `Wrote files to ${ctx.targetDir}`,
+    async while(c) {
+      const answers = resolveAnswers({
+        projectName: c.projectName,
+        preset: c.preset,
+        transport: c.transport,
+        withAnalysis: c.withAnalysis,
+        withDomain: c.withDomain,
+        apiConvention: c.apiConvention,
+        apiClient: c.apiClient,
+        serverAuth: c.serverAuth,
+        searchAdapter: c.searchAdapter,
+        logger: c.logger,
+        errorTracking: c.errorTracking,
+        tracing: c.tracing,
+        models: c.modelsRaw,
+        mcpRuneVersion: c.mcpRuneVersion,
+      });
+      const templateDir = new URL(`../../../../templates/${answers.preset}/`, import.meta.url);
+      await renderTemplate(templateDir, c.targetDir, answers);
+    },
   });
-
-  const templateDir = new URL(`../../../../templates/${answers.preset}/`, import.meta.url);
-  await renderTemplate(templateDir, ctx.targetDir, answers);
-
-  done(`wrote files to ${link(ctx.targetDir)}`);
 }

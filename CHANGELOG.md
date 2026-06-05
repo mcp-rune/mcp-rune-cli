@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] - 2026-06-05
+
+### Added
+
+- **`src/core/tasks.ts`** — `Task<Ctx>` type + `runTasks(ctx, tasks, { dryRun })` runner. Each task has `{ start, end, while, onError? }`. The runner drives a single `@clack/prompts` spinner per task (Resolving template → Writing files → Initializing git repo → Installing dependencies → Wrote files to …) and falls back to `s.error()` + `onError` on failure.
+- **Two-phase execution in `rune new`** — `runPipeline(ctx)` now runs only the prompt + planning actions (synchronously). I/O actions (`render`, `fetchTemplate`, `postScaffold`) push tasks onto `ctx.tasks`. `index.ts` then calls `runTasks(ctx, ctx.tasks)` followed by `nextSteps(ctx)`. Mirrors the `create-astro` pattern.
+- **`--dry-run` flag on `rune new`** — runs every prompt as normal, then prints `[dry-run] would: <task>` for each planned task instead of executing it. No disk writes, no subprocesses.
+- **`--verbose` flag on `rune new`** — streams subprocess stdout (`npm install`) instead of hiding it behind the spinner. Without `--verbose`, install is silent and surfaces only as the spinner line, which gives a clean staged-progress UI.
+- **Tests**: `__tests__/core/tasks.spec.ts` (3 cases — dry-run shape, no-op while, empty list).
+
+### Changed
+
+- **`rune new`'s post-scaffold output** is now a single staged-spinner block instead of an inherited `npm install` log dump. Pass `--verbose` to restore the stream.
+- **`nextSteps` moved out of the pipeline** into the orchestrator so it always prints *after* the task block.
+
+Phase 3 of [#4](https://github.com/mcp-rune/mcp-rune-cli/issues/4).
+
 ## [0.4.0] - 2026-06-05
 
 ### Added
@@ -62,6 +79,7 @@ This is Phase 1 of [#4](https://github.com/mcp-rune/mcp-rune-cli/issues/4) — l
 - `rune doctor` — local environment checks (Node version, Docker, pg client, etc.) with `-p, --project [path]` to also validate a scaffolded project's schemas.
 - `rune db up` — brings the analysis-module Postgres up via `docker compose` and runs migrations.
 
+[0.5.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.1.0...v0.2.0
