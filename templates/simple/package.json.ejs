@@ -8,16 +8,19 @@
     "node": "<%= nodeEngine %>"
   },
   "scripts": {
-    "start": "node src/server.js",
-    "start:local": "node src/server.js",
-    "test": "vitest run",
+    "start": "tsx src/server.ts",
+    "start:local": "tsx src/server.ts",
+    "build": "tsc",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "inspect": "mcp-rune inspect"
   },
   "dependencies": {
     "@mcp-rune/mcp-rune": "<%= mcpRuneVersion %>"
   },
   "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.22.3",
     "typescript": "^5.9.3",
     "vitest": "^4.1.7"
   }

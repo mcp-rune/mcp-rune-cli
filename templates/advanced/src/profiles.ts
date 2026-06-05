@@ -15,23 +15,30 @@
  *   - `apps`         — 'enabled' | 'disabled'
  */
 
+export interface Profile {
+  tools: string[] | null
+  toolsExclude: string[] | null
+  apps: 'enabled' | 'disabled'
+}
+
 export const PROFILES = {
   full: { tools: null, toolsExclude: null, apps: 'enabled' },
   chat: {
     tools: null,
     toolsExclude: ['find_records', 'search_records', 'list_models'],
-    apps: 'enabled',
+    apps: 'enabled'
   },
   agent: { tools: null, toolsExclude: null, apps: 'disabled' },
-  classify: { tools: ['update_model'], toolsExclude: null, apps: 'disabled' },
-};
+  classify: { tools: ['update_model'], toolsExclude: null, apps: 'disabled' }
+} as const satisfies Record<string, Profile>
 
-export function getProfile(name) {
-  const profile = PROFILES[name];
-  if (!profile) {
+export type ProfileName = keyof typeof PROFILES
+
+export function getProfile(name: string): Profile {
+  if (!(name in PROFILES)) {
     throw new Error(
-      `Unknown MCP_PROFILE "${name}". Valid: ${Object.keys(PROFILES).join(', ')}`,
-    );
+      `Unknown MCP_PROFILE "${name}". Valid: ${Object.keys(PROFILES).join(', ')}`
+    )
   }
-  return profile;
+  return PROFILES[name as ProfileName]
 }

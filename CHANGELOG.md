@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.8.0] - 2026-06-05
+
+> Both presets are now TypeScript end-to-end and verified by CI. The scaffolded projects emit `.ts` source, `tsconfig.json` with `strict: true`, and use `tsx` for `npm start`. The legacy hand-rolled prompt/tool registries are gone — scaffolds use the library's `BasePromptRegistry` / `ToolRegistry` directly, which removes ~250 lines of bespoke registry code per project and keeps the cli aligned with `@mcp-rune/mcp-rune`'s public surface (now pinned at `^0.73.8`).
+
+### Added
+
+- **TypeScript templates** (`templates/simple`, `templates/advanced`) — all source files (`*.ts.ejs`, `*.ts`) emit `.ts` with strict-mode `tsconfig.json`. `npm start` runs through `tsx`; `npm run build` runs `tsc`; `npm run typecheck` runs `tsc --noEmit`.
+- **`.github/workflows/ci.yml`** — runs typecheck + lint + tests + scaffold-and-tsc smoke against the published `@mcp-rune/mcp-rune` on every push to `main`, and publishes to GitHub Packages on `v*` tags.
+- **`__tests__/integration/scaffold-typecheck.spec.ts`** — scaffolds each preset, installs against the registry, runs `tsc --noEmit`. Catches "templates are out of sync with the published library" before publish.
+- **Conditional `__only_if_hasHttp__` / `__only_if_hasStdio__` dirs** — `src/servers/remote.ts` and `src/servers/local.ts` are now only emitted when the chosen transport actually uses them, so stdio-only scaffolds don't ship dead HTTP wiring (and HTTP-only scaffolds don't ship a dead stdio entry).
+
+### Changed
+
+- **Default `mcpRuneVersion`** bumped from `^0.41.0` to `^0.73.8`. Scaffolds now pull a library with public types that match the templates.
+- **Advanced preset's tool registry** is the library's `ToolRegistry` wrapped with profile-based allow/deny filtering, instead of a 100-line hand-rolled registry class that re-implemented the library's capability gating.
+- **Advanced preset's prompt registry** is the library's `BasePromptRegistry`, instead of a 200-line custom `PromptRegistry` class. The library's class now ships every method the cache needs (see `@mcp-rune/mcp-rune@0.73.6`).
+- **`src/config.ts`** uses the now-public `ConfigSchema` type (`@mcp-rune/mcp-rune@0.73.7`) via `satisfies ConfigSchema` for proper literal narrowing.
+- **`addModelCommand`** writes `.ts` files and reads existing `.ts` models when re-rendering indexes.
+
+### Removed
+
+- **`templates/advanced/src/prompts/registry.ts`** — 200-line custom `PromptRegistry` superseded by `BasePromptRegistry` from the library.
+
+[0.8.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.7.0...v0.8.0
+
 ## [0.7.0] - 2026-06-05
 
 ### Added

@@ -1,0 +1,53 @@
+import type { ApiClient } from '@mcp-rune/mcp-rune/core'
+import { STRATEGY_TOOL_CLASSES } from '@mcp-rune/mcp-rune/prompts'
+import { createServer } from '@mcp-rune/mcp-rune/server'
+import { DATA_TOOL_CLASSES, ToolRegistry } from '@mcp-rune/mcp-rune/tools'
+
+import { MODEL_CLASSES } from './models/index.js'
+import { promptRegistry } from './prompts/index.js'
+
+// Stub ApiClient — replace with your real HTTP client. The Proxy surfaces a
+// clear error if any tool accidentally tries to hit the network before you
+// have one wired up.
+const stubApiClient = new Proxy({} as ApiClient, {
+  get() {
+    throw new Error(
+      'No ApiClient configured. Wire `createApiClient` in src/config.ts before using auth-gated tools.'
+    )
+  }
+})
+
+const toolRegistry = new ToolRegistry({
+  toolClasses: { ...DATA_TOOL_CLASSES, ...STRATEGY_TOOL_CLASSES },
+  models: MODEL_CLASSES,
+  serverContext: {
+    name: '<%= projectNamePascal %>'
+  },
+  namespace: '<%= projectName %>',
+  promptRegistry,
+  createApiClient: () => stubApiClient
+})
+
+export const mcpConfig = {
+  name: '<%= projectName %>',
+
+  createServer({
+    sessionId,
+    transport,
+    getAccessToken
+  }: {
+    sessionId: string
+    transport: string
+    getAccessToken: () => Promise<string>
+  }) {
+    return createServer({
+      name: '<%= projectName %>',
+      version: '0.1.0',
+      sessionId,
+      transport,
+      toolRegistry,
+      promptRegistry,
+      getAccessToken
+    })
+  }
+}
