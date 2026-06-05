@@ -59,10 +59,11 @@ Reference example: `src/commands/doctor/` — `index.ts` (CLI + output),
 Code that is reused across commands belongs in a top-level support directory,
 not under any one command. Current support dirs:
 
-- `src/render/` — template rendering (`renderTemplate`, `pascal`), used by
-  `new` and `add model`.
-- `src/wizard/` — interactive prompts and preset resolution (`runWizard`,
-  `resolveAnswers`), used by `new`.
+- `src/core/` — shared CLI primitives (`color`, `output`, `prompts`, `cancel`,
+  `tasks`, `fs-utils`), used by every command.
+- `src/data/` — frozen data (currently `mascot.ts`, picked once at startup).
+- `src/render/` — template rendering (`renderTemplate`, `pascal`,
+  `applyTemplateOverrides`), used by `new` and `add model`.
 
 If a helper inside a command folder starts getting imported by a second
 command, lift it to a new top-level support dir before the second importer
@@ -76,3 +77,52 @@ lands.
 - TypeScript is strict, with `verbatimModuleSyntax` on. Use `import type` for
   types that should not appear in the emitted JavaScript.
 - Tests run with vitest (`npm test`); build with `npm run build`.
+
+## Smoke testing `rune inspect`
+
+`rune inspect` shells out to `npx @modelcontextprotocol/inspector`, which
+binds **two** local ports: `6277` (proxy server) and `6274` (UI). The npx
+child often outlives the parent `rune inspect` process, so back-to-back smoke
+runs accumulate orphans that hold one or both ports and break the next
+launch with `PORT IS IN USE at port 627{4,7}`.
+
+### Recipe
+
+```bash
+# 0) confirm env — npm install in step 1 needs GH_PACKAGES_READ_TOKEN until
+#    @mcp-rune/mcp-rune goes public on npmjs.org.
+rune doctor
+
+# 1) fresh scaffold (simple preset by default)
+cd /tmp && rm -rf rune-smoke
+node $(git rev-parse --show-toplevel)/bin/rune.js new rune-smoke --yes --no-git
+
+# 2) launch the inspector in the background
+cd rune-smoke
+node $(git rev-parse --show-toplevel)/bin/rune.js inspect --transport stdio \
+  > /tmp/inspect.log 2>&1 &
+INSPECT_PID=$!
+sleep 15
+
+# 3) expect in the log: "Proxy server listening on localhost:6277",
+#    a session token, and "MCP Inspector is up and running at
+#    http://localhost:6274/?MCP_PROXY_AUTH_TOKEN=…"
+head -10 /tmp/inspect.log
+
+# 4) teardown — pkill is required because npx survives the parent
+pkill -f modelcontextprotocol/inspector
+```
+
+### Notes
+
+- The inspector UI boots independently of the scaffold's `node_modules/`, so
+  the smoke remains useful even when `npm install` has soft-failed (e.g.
+  missing GH Packages token). The MCP handshake itself will fail in that
+  state, but "does `rune inspect` correctly spawn the inspector?" still
+  gets a clean yes/no.
+- `rune inspect` treats `SIGINT` as a clean exit
+  (`src/commands/inspect.ts:84-86`). The `npx` child does not always
+  receive the signal — `pkill -f modelcontextprotocol/inspector` is the
+  reliable cleanup.
+- Stdio server entry detection lives in `src/commands/inspect.ts:21-23`:
+  simple preset → `src/server.js`, advanced preset → `src/servers/local.js`.
