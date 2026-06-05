@@ -94,4 +94,38 @@ rune db up                  Start analysis DB + run migrations (planned)
 - **simple** — stdio transport, no DB, CRUD on declared models. `npm install && npm run start:local`.
 - **advanced** — HTTP + OAuth, optional analysis (Docker pgvector), domain workflows, MCP Apps, profiles.
 
+## Templates
+
+As an alternative to presets, scaffold from a runnable example in the [`mcp-rune/examples`](https://github.com/mcp-rune/examples) repo:
+
+```bash
+rune new my-app --template bookshelf
+```
+
+The CLI fetches the template at scaffold time via [`tiged`](https://github.com/tiged/tiged) — the project lands as a verbatim copy of the source repo. Templates are full apps with their own README, dependencies, and run instructions; presets are configuration-driven starters.
+
+Registered templates:
+
+- **bookshelf** — full mcp-rune surface (models, tools, prompts, interactive apps, optional GraphRAG) backed by an in-memory adapter. Zero external setup.
+
+You can also point `--template` at any GitHub repo using degit-style shorthand:
+
+```bash
+rune new my-app --template owner/repo
+rune new my-app --template owner/repo/subdir
+rune new my-app --template owner/repo/subdir#branch
+```
+
+`--template` is mutually exclusive with `--preset` and the advanced extension flags.
+
+### Offline / corp-proxy fallback
+
+If `tiged` can't reach GitHub (corp proxy, GitHub outage, air-gapped env), point `--offline-template` at a local clone of the template directory:
+
+```bash
+rune new my-app --offline-template ~/clones/examples/bookshelf
+```
+
+The CLI copies that directory verbatim instead of fetching. The dep-override and post-scaffold steps still run.
+
 See `/Users/dsaenz/.config/claude/plans/we-need-to-design-pure-nest.md` for the design.

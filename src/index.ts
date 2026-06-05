@@ -21,7 +21,15 @@ export async function run(argv: string[]): Promise<void> {
   program
     .command('new <project-name>')
     .description('Scaffold a new mcp-rune-based server')
-    .option('--preset <preset>', 'simple or advanced', 'simple')
+    .option('--preset <preset>', 'simple or advanced')
+    .option(
+      '--template <id>',
+      'scaffold from a remote example (e.g. "bookshelf" or "user/repo[/subdir][#ref]")',
+    )
+    .option(
+      '--offline-template <path>',
+      'use a local directory as the template source instead of fetching (for offline/CI use)',
+    )
     .option('--yes', 'skip the wizard and use preset defaults')
     .option('--no-install', "don't run npm install after scaffolding")
     .option('--no-git', "don't initialize a git repo")

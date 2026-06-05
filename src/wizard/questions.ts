@@ -1,5 +1,6 @@
 import { input as askText, select, confirm } from '@inquirer/prompts';
 import { resolveAnswers, type ResolveInput } from './presets.js';
+import { TEMPLATE_REGISTRY } from '../templates/registry.js';
 import type {
   Answers,
   ApiClientChoice,
@@ -12,6 +13,35 @@ import type {
   TracingChoice,
   Transport,
 } from '../types.js';
+
+export type ScaffoldMode = { kind: 'preset' } | { kind: 'template'; id: string };
+
+const TEMPLATE_DESCRIPTIONS: Record<string, string> = {
+  bookshelf: 'Full mcp-rune surface — apps, tools, prompts, GraphRAG. In-memory adapter, zero setup.',
+};
+
+export async function selectScaffoldMode(): Promise<ScaffoldMode> {
+  const kind = await select<'preset' | 'template'>({
+    message: 'How would you like to start?',
+    choices: [
+      { name: 'From scratch — pick a preset and configure', value: 'preset' },
+      { name: 'From an example — clone a runnable template', value: 'template' },
+    ],
+    default: 'preset',
+  });
+
+  if (kind === 'preset') return { kind: 'preset' };
+
+  const id = await select<string>({
+    message: 'Which template?',
+    choices: Object.keys(TEMPLATE_REGISTRY).map((name) => ({
+      name: TEMPLATE_DESCRIPTIONS[name] ? `${name} — ${TEMPLATE_DESCRIPTIONS[name]}` : name,
+      value: name,
+    })),
+  });
+
+  return { kind: 'template', id };
+}
 
 export async function runWizard(initial: ResolveInput): Promise<Answers> {
   const preset =

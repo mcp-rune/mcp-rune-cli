@@ -14,6 +14,8 @@ import type {
 
 export interface NewCommandOptions {
   preset?: string;
+  template?: string;
+  offlineTemplate?: string;
   yes?: boolean;
   install?: boolean;
   git?: boolean;
@@ -62,6 +64,27 @@ const EXTENSION_FLAG_NAMES = [
   ['tracing', '--tracing'],
 ] as const;
 
+const PRESET_ONLY_FLAGS = [
+  ['preset', '--preset'],
+  ['withAnalysis', '--with-analysis'],
+  ['withDomain', '--with-domain'],
+  ['transport', '--transport'],
+  ['models', '--models'],
+  ...EXTENSION_FLAG_NAMES,
+] as const;
+
+function assertTemplateExclusivity(opts: NewCommandOptions): void {
+  if (!opts.template && !opts.offlineTemplate) return;
+  if (opts.template && opts.offlineTemplate) {
+    throw new Error('--template and --offline-template cannot be combined');
+  }
+  for (const [key, flag] of PRESET_ONLY_FLAGS) {
+    if (opts[key] !== undefined) {
+      throw new Error(`${flag} cannot be combined with --template / --offline-template`);
+    }
+  }
+}
+
 function assertAdvancedOnly(opts: NewCommandOptions): void {
   if (opts.preset && opts.preset !== 'simple') return;
   if (!opts.preset && !opts.yes) return;
@@ -75,6 +98,7 @@ function assertAdvancedOnly(opts: NewCommandOptions): void {
 }
 
 export async function newCommand(projectName: string, opts: NewCommandOptions): Promise<void> {
+  assertTemplateExclusivity(opts);
   assertAdvancedOnly(opts);
 
   const targetDir = resolve(process.cwd(), projectName);
@@ -83,13 +107,53 @@ export async function newCommand(projectName: string, opts: NewCommandOptions): 
     throw new Error(`Target directory already exists: ${targetDir}`);
   }
 
+  const mcpRuneLocalRaw = opts.mcpRuneLocal ?? process.env.MCP_RUNE_LOCAL_PATH;
+  const mcpRuneVersion = mcpRuneLocalRaw ? resolveMcpRuneLocalSpec(mcpRuneLocalRaw) : undefined;
+
+  const effectiveOpts = await resolveScaffoldMode(opts);
+
+  if (effectiveOpts.template || effectiveOpts.offlineTemplate) {
+    await scaffoldFromTemplate(projectName, targetDir, effectiveOpts, mcpRuneVersion);
+  } else {
+    await scaffoldFromPreset(projectName, targetDir, effectiveOpts, mcpRuneVersion);
+  }
+
+  const { postScaffold } = await import('./post-scaffold.js');
+  await postScaffold(targetDir, {
+    install: opts.install !== false,
+    git: opts.git !== false,
+  });
+
+  console.log();
+  console.log(kleur.bold('Next steps:'));
+  console.log(`    cd ${projectName}`);
+  if (opts.install === false) console.log('    npm install');
+  if (effectiveOpts.template || effectiveOpts.offlineTemplate) {
+    console.log('    # see the template README for how to run it');
+  } else {
+    console.log('    npm run start:local');
+  }
+}
+
+async function resolveScaffoldMode(opts: NewCommandOptions): Promise<NewCommandOptions> {
+  if (opts.template || opts.offlineTemplate || opts.preset || opts.yes) return opts;
+  const { selectScaffoldMode } = await import('../wizard/questions.js');
+  const mode = await selectScaffoldMode();
+  if (mode.kind === 'template') {
+    return { ...opts, template: mode.id };
+  }
+  return opts;
+}
+
+async function scaffoldFromPreset(
+  projectName: string,
+  targetDir: string,
+  opts: NewCommandOptions,
+  mcpRuneVersion: string | undefined,
+): Promise<void> {
   const { runWizard } = await import('../wizard/questions.js');
   const { resolveAnswers } = await import('../wizard/presets.js');
   const { renderTemplate } = await import('../render/copy-tree.js');
-  const { postScaffold } = await import('./post-scaffold.js');
-
-  const mcpRuneLocalRaw = opts.mcpRuneLocal ?? process.env.MCP_RUNE_LOCAL_PATH;
-  const mcpRuneVersion = mcpRuneLocalRaw ? resolveMcpRuneLocalSpec(mcpRuneLocalRaw) : undefined;
 
   const flagAnswers = {
     projectName,
@@ -131,15 +195,51 @@ export async function newCommand(projectName: string, opts: NewCommandOptions): 
   await renderTemplate(templateDir, targetDir, answers);
 
   console.log(kleur.cyan('✓') + ' wrote files to ' + kleur.blue(targetDir));
+}
 
-  await postScaffold(targetDir, {
-    install: opts.install !== false,
-    git: opts.git !== false,
-  });
+async function scaffoldFromTemplate(
+  projectName: string,
+  targetDir: string,
+  opts: NewCommandOptions,
+  mcpRuneVersion: string | undefined,
+): Promise<void> {
+  const { fetchTemplate, copyOfflineTemplate, applyTemplateOverrides } = await import(
+    '../render/fetch-template.js'
+  );
 
   console.log();
-  console.log(kleur.bold('Next steps:'));
-  console.log(`    cd ${answers.projectName}`);
-  if (opts.install === false) console.log('    npm install');
-  console.log('    npm run start:local');
+  if (opts.template) {
+    console.log(
+      kleur.bold('Scaffolding ') +
+        kleur.red().bold(projectName) +
+        ' ' +
+        kleur.dim().italic(`(from template ${opts.template})…`),
+    );
+  } else {
+    console.log(
+      kleur.bold('Scaffolding ') +
+        kleur.red().bold(projectName) +
+        ' ' +
+        kleur.dim().italic(`(from local ${opts.offlineTemplate})…`),
+    );
+  }
+  if (mcpRuneVersion) {
+    console.log(
+      '    ' +
+        kleur.blue('@mcp-rune/mcp-rune') +
+        kleur.dim(' → ') +
+        kleur.blue(mcpRuneVersion),
+    );
+  }
+  console.log();
+
+  if (opts.template) {
+    await fetchTemplate(opts.template, targetDir);
+  } else {
+    await copyOfflineTemplate(opts.offlineTemplate!, targetDir);
+  }
+
+  await applyTemplateOverrides(targetDir, { mcpRuneVersionOverride: mcpRuneVersion });
+
+  console.log(kleur.cyan('✓') + ' wrote files to ' + kleur.blue(targetDir));
 }

@@ -1,0 +1,8 @@
+{
+  "name": "bookshelf-mini",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@mcp-rune/mcp-rune": "^0.73.2"
+  }
+}
