@@ -19,6 +19,9 @@ export type ScaffoldMode = { kind: 'preset' } | { kind: 'template'; id: string }
 const TEMPLATE_DESCRIPTIONS: Record<string, string> = {
   bookshelf: 'Full mcp-rune surface — apps, tools, prompts, GraphRAG. In-memory adapter, zero setup.',
   tasks: 'Three models (project, task, tag) with belongsTo + hasMany. Shows the polymorphic tool surface.',
+  'bookshelf-rest': 'Same Book model as bookshelf but backed by a real Express + fetch adapter. Adapter-swap demo.',
+  'bookshelf-graph': 'GraphRAG-focused: pgvector + DomainRegistry + 500-book graph fixture pre-wired for every summary strategy.',
+  'bookshelf-remote': 'HttpServer with static-token auth (OAuth path documented). Remote MCP transport.',
 };
 
 export async function selectScaffoldMode(): Promise<ScaffoldMode> {

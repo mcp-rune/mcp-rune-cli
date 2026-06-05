@@ -13,6 +13,9 @@ export interface ResolvedTemplate {
 export const TEMPLATE_REGISTRY: Record<string, TemplateSpec> = {
   bookshelf: { repo: 'mcp-rune/examples', subdir: 'bookshelf', ref: 'main' },
   tasks: { repo: 'mcp-rune/examples', subdir: 'tasks', ref: 'main' },
+  'bookshelf-rest': { repo: 'mcp-rune/examples', subdir: 'bookshelf-rest', ref: 'main' },
+  'bookshelf-graph': { repo: 'mcp-rune/examples', subdir: 'bookshelf-graph', ref: 'main' },
+  'bookshelf-remote': { repo: 'mcp-rune/examples', subdir: 'bookshelf-remote', ref: 'main' },
 };
 
 const SHORTHAND_RE =
