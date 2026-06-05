@@ -3,7 +3,7 @@ import { runTasks, type Task } from '../../src/core/tasks.js';
 
 const stripAnsi = (s: string): string =>
   // eslint-disable-next-line no-control-regex
-  s.replace(/\[[0-9;]*m/g, '');
+  s.replace(/\x1B\[[0-9;]*m/g, '');
 
 describe('runTasks (dry-run)', () => {
   let logSpy: ReturnType<typeof vi.spyOn>;
