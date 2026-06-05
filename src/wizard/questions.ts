@@ -1,6 +1,17 @@
 import { input as askText, select, confirm } from '@inquirer/prompts';
 import { resolveAnswers, type ResolveInput } from './presets.js';
-import type { Answers, Preset, Transport } from '../types.js';
+import type {
+  Answers,
+  ApiClientChoice,
+  ApiConvention,
+  ErrorTrackingChoice,
+  LoggerChoice,
+  Preset,
+  SearchAdapterChoice,
+  ServerAuth,
+  TracingChoice,
+  Transport,
+} from '../types.js';
 
 export async function runWizard(initial: ResolveInput): Promise<Answers> {
   const preset =
@@ -26,6 +37,13 @@ export async function runWizard(initial: ResolveInput): Promise<Answers> {
     transport?: Transport;
     withAnalysis?: boolean;
     withDomain?: boolean;
+    apiConvention?: ApiConvention;
+    apiClient?: ApiClientChoice;
+    serverAuth?: ServerAuth;
+    searchAdapter?: SearchAdapterChoice;
+    logger?: LoggerChoice;
+    errorTracking?: ErrorTrackingChoice;
+    tracing?: TracingChoice;
   } = {};
 
   if (preset === 'advanced') {
@@ -53,6 +71,91 @@ export async function runWizard(initial: ResolveInput): Promise<Answers> {
       (await confirm({
         message: 'Enable domain workflows? (creates src/domain/ stubs)',
         default: false,
+      }));
+
+    // ──── Architecture ──────────────────────────────────────────────────
+    advanced.apiConvention =
+      initial.apiConvention ??
+      (await select<ApiConvention>({
+        message: 'API convention?',
+        choices: [
+          { name: 'jsonapi — framework default (JSON:API wire format)', value: 'jsonapi' },
+          { name: 'rest-flat — starter (flat REST, no envelope)', value: 'rest-flat' },
+        ],
+        default: 'jsonapi',
+      }));
+
+    advanced.apiClient =
+      initial.apiClient ??
+      (await select<ApiClientChoice>({
+        message: 'API client?',
+        choices: [
+          { name: 'none — leave a placeholder for you to fill in', value: 'none' },
+          { name: 'fetch — starter implementation using native fetch', value: 'fetch' },
+        ],
+        default: 'none',
+      }));
+
+    advanced.searchAdapter =
+      initial.searchAdapter ??
+      (await select<SearchAdapterChoice>({
+        message: 'Search adapter?',
+        choices: [
+          { name: 'none — framework default (flat filter spread)', value: 'none' },
+          { name: 'ransack — starter for Rails Ransack q[...] syntax', value: 'ransack' },
+        ],
+        default: 'none',
+      }));
+
+    const transportHasHttp =
+      advanced.transport === 'http' || advanced.transport === 'both';
+    if (transportHasHttp) {
+      advanced.serverAuth =
+        initial.serverAuth ??
+        (await select<ServerAuth>({
+          message: 'HTTP server auth?',
+          choices: [
+            { name: 'oauth — OAuth2 discovery + PKCE (recommended)', value: 'oauth' },
+            { name: 'static-token — single ACCESS_TOKEN bearer (simpler)', value: 'static-token' },
+          ],
+          default: 'oauth',
+        }));
+    } else {
+      advanced.serverAuth = initial.serverAuth ?? 'oauth';
+    }
+
+    // ──── Observability ─────────────────────────────────────────────────
+    advanced.logger =
+      initial.logger ??
+      (await select<LoggerChoice>({
+        message: 'Logger?',
+        choices: [
+          { name: 'framework — use mcp-rune\'s built-in logger', value: 'framework' },
+          { name: 'pino — starter wrapper exposing a pino instance', value: 'pino' },
+        ],
+        default: 'framework',
+      }));
+
+    advanced.errorTracking =
+      initial.errorTracking ??
+      (await select<ErrorTrackingChoice>({
+        message: 'Error tracking?',
+        choices: [
+          { name: 'none — no DSN configured', value: 'none' },
+          { name: 'sentry — pre-populate SENTRY_DSN in .env.example', value: 'sentry' },
+        ],
+        default: 'none',
+      }));
+
+    advanced.tracing =
+      initial.tracing ??
+      (await select<TracingChoice>({
+        message: 'Tracing?',
+        choices: [
+          { name: 'none — no tracing backend configured', value: 'none' },
+          { name: 'langfuse — pre-populate LANGFUSE_* keys in .env.example', value: 'langfuse' },
+        ],
+        default: 'none',
       }));
   }
 

@@ -14,7 +14,7 @@ export const configSchema = {
     },
   },
 
-<% if (hasHttp) { -%>
+<% if (hasHttp && !useStaticTokenAuth) { -%>
   oauth: {
     serverUrl: {
       env: 'OAUTH_SERVER_URL',
@@ -89,6 +89,13 @@ export const configSchema = {
       port: { env: 'PORT', type: 'integer', default: 4100, doc: 'HTTP server port' },
       baseUrl: { env: 'BASE_URL', doc: 'Public base URL for the server' },
       pathPrefix: { env: 'PATH_PREFIX', default: '', doc: 'Path prefix for all routes' },
+<% if (useStaticTokenAuth) { -%>
+      accessToken: {
+        env: 'HTTP_ACCESS_TOKEN',
+        sensitive: true,
+        doc: 'Static bearer token required by HTTP clients (replaces OAuth)',
+      },
+<% } -%>
     },
 <% } -%>
   },

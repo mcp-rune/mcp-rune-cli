@@ -7,10 +7,15 @@
 
 import { readPackageInfo, loadConfig, StartupTracker } from '@mcp-rune/mcp-rune/core';
 import { configSchema } from '../config/schema.js';
-<% if (hasHttp) { -%>
+<% if (hasHttp && !useStaticTokenAuth) { -%>
 import { OAuthService, PostgresqlAdapter, _setAdapter } from '@mcp-rune/mcp-rune/oauth2';
 <% } -%>
+<% if (usePinoLogger) { -%>
+import { errorTracking, tracing, vectorStorage } from '@mcp-rune/mcp-rune/services';
+import { logger } from './observability/logger.js';
+<% } else { -%>
 import { errorTracking, tracing, vectorStorage, logger } from '@mcp-rune/mcp-rune/services';
+<% } -%>
 import { createServer as createServerFactory } from '@mcp-rune/mcp-rune/server';
 import { createPromptCache } from '@mcp-rune/mcp-rune/prompts';
 import { createToolRegistry } from './tools/index.js';
@@ -68,7 +73,7 @@ startup.phase('database', 'Database', (log) => {
     return;
   }
 
-<% if (hasHttp) { -%>
+<% if (hasHttp && !useStaticTokenAuth) { -%>
   _setAdapter(new PostgresqlAdapter({ pool }));
   log.debug('OAuth token store connected');
 
@@ -84,7 +89,7 @@ startup.phase('database', 'Database', (log) => {
   }
 });
 
-<% if (hasHttp) { -%>
+<% if (hasHttp && !useStaticTokenAuth) { -%>
 export function createOAuthService({ redirectUri }) {
   return new OAuthService({
     authServerUrl: config.oauth.serverUrl,

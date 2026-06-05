@@ -1,5 +1,9 @@
 import pg from 'pg';
+<% if (usePinoLogger) { -%>
+import { logger } from './observability/logger.js';
+<% } else { -%>
 import { logger } from '@mcp-rune/mcp-rune/services';
+<% } -%>
 
 let pool = null;
 
@@ -13,7 +17,7 @@ export function initDatabase(url) {
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
   });
-  logger.info('Database pool created', { service: '{{projectName}}-db' });
+  logger.info('Database pool created', { service: '<%= projectName %>-db' });
   return pool;
 }
 
@@ -25,5 +29,5 @@ export async function closeDatabase() {
   if (!pool) return;
   await pool.end();
   pool = null;
-  logger.info('Database pool closed', { service: '{{projectName}}-db' });
+  logger.info('Database pool closed', { service: '<%= projectName %>-db' });
 }

@@ -8,10 +8,17 @@
     "node": "<%= nodeEngine %>"
   },
   "scripts": {
+    "start": "node src/server.js",
     "start:local": "node src/server.js",
-    "dev:inspector": "npx @modelcontextprotocol/inspector node src/server.js"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "inspect": "mcp-rune inspect"
   },
   "dependencies": {
     "@mcp-rune/mcp-rune": "<%= mcpRuneVersion %>"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.7"
   }
 }

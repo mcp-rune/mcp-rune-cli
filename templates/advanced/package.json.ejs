@@ -8,6 +8,11 @@
     "node": "<%= nodeEngine %>"
   },
   "scripts": {
+<% if (hasHttp) { -%>
+    "start": "node src/servers/remote.js",
+<% } else { -%>
+    "start": "node src/servers/local.js",
+<% } -%>
 <% if (hasStdio) { -%>
     "start:local": "node src/servers/local.js",
 <% } -%>
@@ -15,8 +20,10 @@
     "start:remote": "node src/servers/remote.js",
     "start:chat": "MCP_PROFILE=chat node src/servers/remote.js",
     "start:agent": "MCP_PROFILE=agent node src/servers/remote.js",
-    "inspect:remote": "npx @modelcontextprotocol/inspector --url http://localhost:4100/mcp",
 <% } -%>
+    "inspect": "mcp-rune inspect",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
     "db:migrate": "node src/scripts/db-migrate.js"<% if (withAnalysis) { %>,
     "db:up": "docker compose up -d db && npm run db:migrate",
     "db:down": "docker compose down"<% } %>
@@ -24,6 +31,13 @@
   "dependencies": {
     "@mcp-rune/mcp-rune": "<%= mcpRuneVersion %>",
     "dotenv": "^17.3.1",
+<% if (usePinoLogger) { -%>
+    "pino": "^9.5.0",
+<% } -%>
     "pg": "^8.18.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.7"
   }
 }

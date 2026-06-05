@@ -31,12 +31,23 @@ describe('parseModelSpec', () => {
   });
 });
 
+const EXTENSION_DEFAULTS = {
+  apiConvention: 'jsonapi',
+  apiClient: 'none',
+  serverAuth: 'oauth',
+  searchAdapter: 'none',
+  logger: 'framework',
+  errorTracking: 'none',
+  tracing: 'none',
+} as const;
+
 describe('presetDefaults', () => {
   it('returns defaults for simple', () => {
     expect(presetDefaults('simple')).toEqual({
       transport: 'stdio',
       withAnalysis: false,
       withDomain: false,
+      ...EXTENSION_DEFAULTS,
     });
   });
 
@@ -45,6 +56,7 @@ describe('presetDefaults', () => {
       transport: 'both',
       withAnalysis: false,
       withDomain: false,
+      ...EXTENSION_DEFAULTS,
     });
   });
 
@@ -81,5 +93,34 @@ describe('resolveAnswers', () => {
   it('parses models from string spec', () => {
     const out = resolveAnswers({ projectName: 'foo', models: 'Book,Theme' });
     expect(out.models.map((m) => m.name)).toEqual(['Book', 'Theme']);
+  });
+
+  it('round-trips extension-point overrides', () => {
+    const out = resolveAnswers({
+      projectName: 'foo',
+      preset: 'advanced',
+      apiConvention: 'rest-flat',
+      apiClient: 'fetch',
+      serverAuth: 'static-token',
+      searchAdapter: 'ransack',
+      logger: 'pino',
+      errorTracking: 'sentry',
+      tracing: 'langfuse',
+    });
+    expect(out.apiConvention).toBe('rest-flat');
+    expect(out.apiClient).toBe('fetch');
+    expect(out.serverAuth).toBe('static-token');
+    expect(out.searchAdapter).toBe('ransack');
+    expect(out.logger).toBe('pino');
+    expect(out.errorTracking).toBe('sentry');
+    expect(out.tracing).toBe('langfuse');
+  });
+
+  it('keeps extension defaults when not overridden', () => {
+    const out = resolveAnswers({ projectName: 'foo', preset: 'advanced' });
+    expect(out.apiConvention).toBe('jsonapi');
+    expect(out.apiClient).toBe('none');
+    expect(out.serverAuth).toBe('oauth');
+    expect(out.logger).toBe('framework');
   });
 });

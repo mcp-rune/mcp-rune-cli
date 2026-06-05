@@ -18,6 +18,15 @@ import {
   TOOL_CATEGORIES,
 } from '@mcp-rune/mcp-rune/tools';
 import { vectorStorage, tracing } from '@mcp-rune/mcp-rune/services';
+<% if (useFetchClient) { -%>
+import { FetchApiClient } from '../api/fetch-client.js';
+<% } -%>
+<% if (useFlatRestConvention) { -%>
+import { flatRestConvention } from '../conventions/flat-rest-convention.js';
+<% } -%>
+<% if (useRansackSearch) { -%>
+import { ransackSearchAdapter } from '../api-extensions/ransack-search-adapter.js';
+<% } -%>
 
 const TOOL_CLASSES = {
   ...STRATEGY_TOOL_CLASSES,
@@ -120,7 +129,23 @@ export class ToolRegistry {
     const token = await getAccessToken?.();
     if (!token) throw new Error('Not authenticated.');
     return new ToolClass({
+<% if (useFetchClient) { -%>
+      apiClient: new FetchApiClient({
+        baseUrl: this.apiUrl,
+        accessToken: token,
+<% if (useFlatRestConvention) { -%>
+        convention: flatRestConvention,
+<% } -%>
+      }),
+<% } else { -%>
       apiClient: { /* inject your API client here; see README */ },
+<% } -%>
+<% if (useRansackSearch) { -%>
+      searchAdapter: ransackSearchAdapter,
+<% } -%>
+<% if (useFlatRestConvention && !useFetchClient) { -%>
+      convention: flatRestConvention,
+<% } -%>
       accessToken: token,
       logger: this.logger,
       models: this.models,

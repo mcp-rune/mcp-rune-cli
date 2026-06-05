@@ -14,7 +14,15 @@ npm run start:local
 Inspect with the MCP Inspector:
 
 ```bash
-npm run dev:inspector
+npm run inspect
+```
+
+Other scripts:
+
+```bash
+npm run start         # same entry as start:local for the simple preset
+npm run test          # vitest smoke tests
+npm run typecheck     # tsc --noEmit
 ```
 
 ## Layout

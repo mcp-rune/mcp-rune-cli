@@ -2,6 +2,15 @@ import { resolve, isAbsolute } from 'node:path';
 import { existsSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import kleur from 'kleur';
+import type {
+  ApiClientChoice,
+  ApiConvention,
+  ErrorTrackingChoice,
+  LoggerChoice,
+  SearchAdapterChoice,
+  ServerAuth,
+  TracingChoice,
+} from '../types.js';
 
 export interface NewCommandOptions {
   preset?: string;
@@ -13,6 +22,13 @@ export interface NewCommandOptions {
   transport?: 'stdio' | 'http' | 'both';
   models?: string;
   mcpRuneLocal?: string;
+  apiConvention?: ApiConvention;
+  apiClient?: ApiClientChoice;
+  serverAuth?: ServerAuth;
+  searchAdapter?: SearchAdapterChoice;
+  logger?: LoggerChoice;
+  errorTracking?: ErrorTrackingChoice;
+  tracing?: TracingChoice;
 }
 
 export function resolveMcpRuneLocalSpec(raw: string): string {
@@ -36,7 +52,31 @@ export function resolveMcpRuneLocalSpec(raw: string): string {
   return `${prefix}${abs}`;
 }
 
+const EXTENSION_FLAG_NAMES = [
+  ['apiConvention', '--api-convention'],
+  ['apiClient', '--api-client'],
+  ['serverAuth', '--server-auth'],
+  ['searchAdapter', '--search-adapter'],
+  ['logger', '--logger'],
+  ['errorTracking', '--error-tracking'],
+  ['tracing', '--tracing'],
+] as const;
+
+function assertAdvancedOnly(opts: NewCommandOptions): void {
+  if (opts.preset && opts.preset !== 'simple') return;
+  if (!opts.preset && !opts.yes) return;
+  for (const [key, flag] of EXTENSION_FLAG_NAMES) {
+    if (opts[key] !== undefined) {
+      throw new Error(
+        `${flag} is only valid with --preset advanced (got --preset ${opts.preset ?? 'simple'})`,
+      );
+    }
+  }
+}
+
 export async function newCommand(projectName: string, opts: NewCommandOptions): Promise<void> {
+  assertAdvancedOnly(opts);
+
   const targetDir = resolve(process.cwd(), projectName);
 
   if (existsSync(targetDir)) {
@@ -59,6 +99,13 @@ export async function newCommand(projectName: string, opts: NewCommandOptions): 
     transport: opts.transport,
     models: opts.models,
     mcpRuneVersion,
+    apiConvention: opts.apiConvention,
+    apiClient: opts.apiClient,
+    serverAuth: opts.serverAuth,
+    searchAdapter: opts.searchAdapter,
+    logger: opts.logger,
+    errorTracking: opts.errorTracking,
+    tracing: opts.tracing,
   };
 
   const answers = opts.yes ? resolveAnswers(flagAnswers) : await runWizard(flagAnswers);

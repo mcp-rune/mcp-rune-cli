@@ -8,7 +8,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '../..', '.env'), quiet: true });
 
 const { HttpServer } = await import('@mcp-rune/mcp-rune/server');
+<% if (useStaticTokenAuth) { -%>
+const { config, mcpConfig } = await import('../config.js');
+<% } else { -%>
 const { config, createOAuthService, mcpConfig } = await import('../config.js');
+<% } -%>
 
 const port = config.transport.remote.port;
 const baseUrl = config.transport.remote.baseUrl || `http://localhost:${port}`;
@@ -18,7 +22,11 @@ const server = new HttpServer({
   port,
   baseUrl,
   pathPrefix: config.transport.remote.pathPrefix,
+<% if (useStaticTokenAuth) { -%>
+  accessToken: config.transport.remote.accessToken,
+<% } else { -%>
   oauth: createOAuthService({ redirectUri: `${baseUrl}/oauth/callback` }),
+<% } -%>
   mcp: mcpConfig,
   isProduction,
   corsOrigins: config.http.corsOrigins,

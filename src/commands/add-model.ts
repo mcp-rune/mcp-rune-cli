@@ -129,6 +129,13 @@ function makeVars(cwd: string, preset: Preset, models: Model[]): TemplateVars {
     withDomain: false,
     hasHttp: false,
     hasStdio: true,
+    useFlatRestConvention: false,
+    useFetchClient: false,
+    useStaticTokenAuth: false,
+    useRansackSearch: false,
+    usePinoLogger: false,
+    useSentry: false,
+    useLangfuse: false,
     mcpRuneVersion: pkg.dependencies?.['@mcp-rune/mcp-rune'] ?? '^0.41.0',
     nodeEngine: '>=24.0.0',
   };

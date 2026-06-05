@@ -139,4 +139,100 @@ describe('advanced preset', () => {
     const schema = readFileSync(join(outDir, 'config/schema.js'), 'utf8');
     expect(schema).not.toContain('OAUTH_CLIENT_ID');
   });
+
+  it('emits flat-rest convention file when --api-convention=rest-flat', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced', {
+      apiConvention: 'rest-flat',
+    });
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    expect(existsSync(join(outDir, 'src/conventions/flat-rest-convention.js'))).toBe(true);
+    const tools = readFileSync(join(outDir, 'src/tools/index.js'), 'utf8');
+    expect(tools).toContain("from '../conventions/flat-rest-convention.js'");
+  });
+
+  it('emits fetch client and wires it in when --api-client=fetch', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced', { apiClient: 'fetch' });
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    expect(existsSync(join(outDir, 'src/api/fetch-client.js'))).toBe(true);
+    const tools = readFileSync(join(outDir, 'src/tools/index.js'), 'utf8');
+    expect(tools).toContain('new FetchApiClient');
+    expect(tools).not.toContain('inject your API client here');
+  });
+
+  it('swaps oauth for accessToken when --server-auth=static-token', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced', {
+      serverAuth: 'static-token',
+      transport: 'http',
+    });
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    const remote = readFileSync(join(outDir, 'src/servers/remote.js'), 'utf8');
+    expect(remote).toContain('accessToken: config.transport.remote.accessToken');
+    expect(remote).not.toContain('createOAuthService');
+
+    const schema = readFileSync(join(outDir, 'config/schema.js'), 'utf8');
+    expect(schema).not.toContain('OAUTH_CLIENT_ID');
+    expect(schema).toContain('HTTP_ACCESS_TOKEN');
+  });
+
+  it('emits ransack search adapter when --search-adapter=ransack', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced', {
+      searchAdapter: 'ransack',
+    });
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    expect(existsSync(join(outDir, 'src/api-extensions/ransack-search-adapter.js'))).toBe(true);
+    const tools = readFileSync(join(outDir, 'src/tools/index.js'), 'utf8');
+    expect(tools).toContain('ransackSearchAdapter');
+  });
+
+  it('emits pino logger and updates imports when --logger=pino', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced', { logger: 'pino' });
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    expect(existsSync(join(outDir, 'src/observability/logger.js'))).toBe(true);
+    const cfg = readFileSync(join(outDir, 'src/config.js'), 'utf8');
+    expect(cfg).toContain("from './observability/logger.js'");
+
+    const pkg = JSON.parse(readFileSync(join(outDir, 'package.json'), 'utf8'));
+    expect(pkg.dependencies.pino).toBeTruthy();
+  });
+
+  it('uncomments SENTRY_DSN in .env.example when --error-tracking=sentry', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced', {
+      errorTracking: 'sentry',
+    });
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    const env = readFileSync(join(outDir, '.env.example'), 'utf8');
+    expect(env).toMatch(/^SENTRY_DSN=/m);
+  });
+
+  it('uncomments LANGFUSE keys in .env.example when --tracing=langfuse', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced', { tracing: 'langfuse' });
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    const env = readFileSync(join(outDir, '.env.example'), 'utf8');
+    expect(env).toMatch(/^LANGFUSE_PUBLIC_KEY=/m);
+    expect(env).toMatch(/^LANGFUSE_SECRET_KEY=/m);
+  });
+
+  it('keeps observability keys commented out by default', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced');
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    const env = readFileSync(join(outDir, '.env.example'), 'utf8');
+    expect(env).toMatch(/^# SENTRY_DSN=/m);
+    expect(env).toMatch(/^# LANGFUSE_PUBLIC_KEY=/m);
+  });
 });

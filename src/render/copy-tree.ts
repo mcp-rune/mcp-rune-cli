@@ -124,6 +124,7 @@ export function pascal(s: string): string {
 
 function makeVars(answers: Answers): TemplateVars {
   const transport = answers.transport ?? 'stdio';
+  const hasHttp = transport === 'http' || transport === 'both';
   return {
     projectName: answers.projectName,
     projectNamePascal: pascal(answers.projectName),
@@ -131,8 +132,15 @@ function makeVars(answers: Answers): TemplateVars {
     transport,
     withAnalysis: Boolean(answers.withAnalysis),
     withDomain: Boolean(answers.withDomain),
-    hasHttp: transport === 'http' || transport === 'both',
+    hasHttp,
     hasStdio: transport === 'stdio' || transport === 'both',
+    useFlatRestConvention: answers.apiConvention === 'rest-flat',
+    useFetchClient: answers.apiClient === 'fetch',
+    useStaticTokenAuth: hasHttp && answers.serverAuth === 'static-token',
+    useRansackSearch: answers.searchAdapter === 'ransack',
+    usePinoLogger: answers.logger === 'pino',
+    useSentry: answers.errorTracking === 'sentry',
+    useLangfuse: answers.tracing === 'langfuse',
     models: normalizeModels(answers.models),
     mcpRuneVersion: answers.mcpRuneVersion ?? '^0.41.0',
     nodeEngine: answers.nodeEngine ?? '>=24.0.0',

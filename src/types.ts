@@ -2,6 +2,14 @@ export type Preset = 'simple' | 'advanced';
 
 export type Transport = 'stdio' | 'http' | 'both';
 
+export type ApiConvention = 'jsonapi' | 'rest-flat';
+export type ApiClientChoice = 'none' | 'fetch';
+export type ServerAuth = 'oauth' | 'static-token';
+export type SearchAdapterChoice = 'none' | 'ransack';
+export type LoggerChoice = 'framework' | 'pino';
+export type ErrorTrackingChoice = 'none' | 'sentry';
+export type TracingChoice = 'none' | 'langfuse';
+
 export type AttrType = 'string' | 'text' | 'integer' | 'enum' | 'datetime' | 'boolean';
 
 export interface ModelAttr {
@@ -25,6 +33,13 @@ export interface Answers {
   transport: Transport;
   withAnalysis: boolean;
   withDomain: boolean;
+  apiConvention: ApiConvention;
+  apiClient: ApiClientChoice;
+  serverAuth: ServerAuth;
+  searchAdapter: SearchAdapterChoice;
+  logger: LoggerChoice;
+  errorTracking: ErrorTrackingChoice;
+  tracing: TracingChoice;
   models: Model[] | string | undefined;
   mcpRuneVersion?: string;
   nodeEngine?: string;
@@ -40,6 +55,14 @@ export interface TemplateVars {
   withDomain: boolean;
   hasHttp: boolean;
   hasStdio: boolean;
+  /** Derived booleans driving __only_if_<X>__ subtrees and EJS conditionals. */
+  useFlatRestConvention: boolean;
+  useFetchClient: boolean;
+  useStaticTokenAuth: boolean;
+  useRansackSearch: boolean;
+  usePinoLogger: boolean;
+  useSentry: boolean;
+  useLangfuse: boolean;
   models: Model[];
   mcpRuneVersion: string;
   nodeEngine: string;

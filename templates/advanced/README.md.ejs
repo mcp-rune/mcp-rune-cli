@@ -8,12 +8,20 @@ MCP server scaffolded with [`@mcp-rune/create`](https://github.com/mcp-rune/mcp-
 cp .env.example .env
 # fill in GH_PACKAGES_READ_TOKEN, OAUTH_*, etc.
 npm install
+<% if (hasHttp) { -%>
+npm run start              # production default — HTTP + OAuth (alias for start:remote)
+<% } else { -%>
+npm run start              # production default — stdio (alias for start:local)
+<% } -%>
 <% if (hasStdio) { -%>
 npm run start:local        # stdio (for Claude Code, Cursor, etc.)
 <% } -%>
 <% if (hasHttp) { -%>
 npm run start:remote       # HTTP + OAuth
 <% } -%>
+npm run test               # vitest smoke tests
+npm run typecheck          # tsc --noEmit
+npm run inspect            # open the MCP Inspector pre-wired
 ```
 
 <% if (withAnalysis) { -%>
@@ -65,4 +73,4 @@ src/
 ## Useful links
 
 - [mcp-rune docs](https://github.com/mcp-rune/mcp-rune)
-- MCP Inspector: `npm run inspect:remote`
+- MCP Inspector: `npm run inspect`
