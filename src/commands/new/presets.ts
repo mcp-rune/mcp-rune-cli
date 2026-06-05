@@ -10,7 +10,7 @@ import type {
   ServerAuth,
   TracingChoice,
   Transport,
-} from '../types.js';
+} from '../../types.js';
 
 interface PresetDefaults {
   transport: Transport;

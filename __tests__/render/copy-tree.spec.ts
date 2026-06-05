@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync, mkdirSync, readFileSync, existsSync
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { substitute, pascal, renderTemplate } from '#src/render/copy-tree.js';
-import { resolveAnswers } from '#src/wizard/presets.js';
+import { resolveAnswers } from '#src/commands/new/presets.js';
 import type { Answers } from '#src/types.js';
 
 function answers(overrides: Partial<Parameters<typeof resolveAnswers>[0]> = {}): Answers {

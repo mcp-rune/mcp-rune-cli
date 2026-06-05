@@ -1,4 +1,4 @@
-import { parseModelSpec, presetDefaults, resolveAnswers } from '#src/wizard/presets.js';
+import { parseModelSpec, presetDefaults, resolveAnswers } from '#src/commands/new/presets.js';
 
 describe('parseModelSpec', () => {
   it('returns empty array for falsy input', () => {

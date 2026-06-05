@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
-import { newCommand } from './commands/new.js';
+import { newCommand } from './commands/new/index.js';
 import { addModelCommand } from './commands/add-model.js';
 import { doctorCommand } from './commands/doctor/index.js';
 import { dbUpCommand } from './commands/db-up.js';

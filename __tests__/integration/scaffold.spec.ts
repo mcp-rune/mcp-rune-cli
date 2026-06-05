@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { renderTemplate } from '#src/render/copy-tree.js';
-import { resolveAnswers } from '#src/wizard/presets.js';
+import { resolveAnswers } from '#src/commands/new/presets.js';
 import type { Answers } from '#src/types.js';
 
 const REPO_ROOT = new URL('../..', import.meta.url);
