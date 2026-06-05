@@ -1,5 +1,3 @@
-import { link } from '../../../core/color.js';
-import { done } from '../../../core/output.js';
 import {
   applyTemplateOverrides,
   copyOfflineTemplate,
@@ -9,18 +7,22 @@ import type { NewContext } from '../context.js';
 
 type Ctx = Pick<
   NewContext,
-  'scaffoldMode' | 'template' | 'offlineTemplate' | 'targetDir' | 'mcpRuneVersion'
+  'scaffoldMode' | 'template' | 'offlineTemplate' | 'targetDir' | 'mcpRuneVersion' | 'tasks'
 >;
 
 export async function fetchTemplate(ctx: Ctx): Promise<void> {
-  if (ctx.scaffoldMode === 'template') {
-    await fetchRemoteTemplate(ctx.template!, ctx.targetDir);
-  } else if (ctx.scaffoldMode === 'offlineTemplate') {
-    await copyOfflineTemplate(ctx.offlineTemplate!, ctx.targetDir);
-  } else {
-    return;
-  }
+  if (ctx.scaffoldMode !== 'template' && ctx.scaffoldMode !== 'offlineTemplate') return;
 
-  await applyTemplateOverrides(ctx.targetDir, { mcpRuneVersionOverride: ctx.mcpRuneVersion });
-  done(`wrote files to ${link(ctx.targetDir)}`);
+  ctx.tasks.push({
+    start: 'Resolving template',
+    end: `Wrote files to ${ctx.targetDir}`,
+    async while(c) {
+      if (c.scaffoldMode === 'template') {
+        await fetchRemoteTemplate(c.template!, c.targetDir);
+      } else {
+        await copyOfflineTemplate(c.offlineTemplate!, c.targetDir);
+      }
+      await applyTemplateOverrides(c.targetDir, { mcpRuneVersionOverride: c.mcpRuneVersion });
+    },
+  });
 }

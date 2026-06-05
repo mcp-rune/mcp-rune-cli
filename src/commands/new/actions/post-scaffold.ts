@@ -1,26 +1,36 @@
 import { execa } from 'execa';
-import { done, hint, notice } from '../../../core/output.js';
+import { notice } from '../../../core/output.js';
 import type { NewContext } from '../context.js';
 
-type Ctx = Pick<NewContext, 'targetDir' | 'install' | 'git'>;
+type Ctx = Pick<NewContext, 'targetDir' | 'install' | 'git' | 'verbose' | 'tasks'>;
 
 export async function postScaffold(ctx: Ctx): Promise<void> {
   if (ctx.git) {
-    try {
-      await execa('git', ['init', '--quiet'], { cwd: ctx.targetDir });
-      done('initialized git repo');
-    } catch (err) {
-      notice(`git init failed: ${(err as Error).message}`);
-    }
+    ctx.tasks.push({
+      start: 'Initializing git repo',
+      end: 'Initialized git repo',
+      async while(c) {
+        await execa('git', ['init', '--quiet'], { cwd: c.targetDir });
+      },
+      onError(err) {
+        notice(`git init failed: ${(err as Error).message}`);
+      },
+    });
   }
 
   if (ctx.install) {
-    hint('    running npm install…');
-    try {
-      await execa('npm', ['install'], { cwd: ctx.targetDir, stdio: 'inherit' });
-      done('installed dependencies');
-    } catch (err) {
-      notice(`npm install failed: ${(err as Error).message}`);
-    }
+    ctx.tasks.push({
+      start: 'Installing dependencies',
+      end: 'Installed dependencies',
+      async while(c) {
+        await execa('npm', ['install'], {
+          cwd: c.targetDir,
+          stdio: c.verbose ? 'inherit' : 'pipe',
+        });
+      },
+      onError(err) {
+        notice(`npm install failed: ${(err as Error).message}`);
+      },
+    });
   }
 }

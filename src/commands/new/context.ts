@@ -1,6 +1,7 @@
 import { existsSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { isAbsolute, resolve } from 'node:path';
+import type { Task } from '../../core/tasks.js';
 import type {
   ApiClientChoice,
   ApiConvention,
@@ -19,6 +20,8 @@ export interface NewCommandOptions {
   template?: string;
   offlineTemplate?: string;
   yes?: boolean;
+  dryRun?: boolean;
+  verbose?: boolean;
   install?: boolean;
   git?: boolean;
   withAnalysis?: boolean;
@@ -40,6 +43,11 @@ export type ScaffoldMode = 'preset' | 'template' | 'offlineTemplate';
 export interface NewContext {
   // Modes
   yes: boolean;
+  dryRun: boolean;
+  verbose: boolean;
+
+  // Deferred work — populated by I/O actions, drained by core/tasks.runTasks.
+  tasks: Task<NewContext>[];
 
   // Project
   projectName: string;
@@ -157,6 +165,9 @@ export function buildNewContext(projectName: string, opts: NewCommandOptions): N
 
   return {
     yes: opts.yes === true,
+    dryRun: opts.dryRun === true,
+    verbose: opts.verbose === true,
+    tasks: [],
     projectName,
     targetDir,
     scaffoldMode,
