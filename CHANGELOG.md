@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] - 2026-06-05
+
+### Added
+
+- **`<!-- RUNE:REMOVE:START -->…<!-- RUNE:REMOVE:END -->` markers** — content between these markers in any `*.md` file under the scaffolded project is stripped after the template is fetched/copied. Mirrors `create-astro`'s `<!-- ASTRO:REMOVE -->` pattern, so templates can ship dev-only content (maintainer notes, internal links) that disappears in user-facing scaffolds. `node_modules/` and `.git/` are skipped during the walk.
+- **`package.json` `name` rewrite** — `applyTemplateOverrides` now rewrites `name` to the scaffolded project name, fixing the long-standing bug where `rune new my-server --template bookshelf` produced `{ "name": "bookshelf" }`. `applyTemplateOverrides` gained a `projectName` field on its options.
+- **`package.json` indent preservation** — detects the original indent (tab, 2-space, 4-space, …) and reuses it on write. No more 4-space configs being silently collapsed to 2-space.
+- **Boilerplate removal** — `CHANGELOG.md` and `.codesandbox/` are removed from the scaffolded project. Template-internal hygiene that users don't need.
+- **Tests**: `__tests__/render/template-overrides.spec.ts` — 14 cases covering package.json patching, marker stripping, and boilerplate removal.
+
+### Changed
+
+- **`commands/new/actions/fetch-template.ts`** now passes `projectName` to `applyTemplateOverrides`.
+
+This is the final phase of [#4](https://github.com/mcp-rune/mcp-rune-cli/issues/4). With Phases 1-5 merged, `create-mcp-rune` is at create-astro-class polish: shared `core/` primitives, step-action architecture, two-phase execution with staged spinners, Quick/Customize/Template fork, mascot personality, pre-scaffold summary, boxed outro, and template post-processing.
+
 ## [0.6.0] - 2026-06-05
 
 ### Added
@@ -101,6 +117,7 @@ This is Phase 1 of [#4](https://github.com/mcp-rune/mcp-rune-cli/issues/4) — l
 - `rune doctor` — local environment checks (Node version, Docker, pg client, etc.) with `-p, --project [path]` to also validate a scaffolded project's schemas.
 - `rune db up` — brings the analysis-module Postgres up via `docker compose` and runs migrations.
 
+[0.7.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.3.0...v0.4.0
