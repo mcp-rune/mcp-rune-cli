@@ -1,6 +1,7 @@
 import { existsSync, statSync } from 'node:fs';
-import { homedir } from 'node:os';
+import { homedir, platform } from 'node:os';
 import { isAbsolute, resolve } from 'node:path';
+import { pickMascot, type Mascot } from '../../data/mascot.js';
 import type { Task } from '../../core/tasks.js';
 import type {
   ApiClientChoice,
@@ -22,6 +23,8 @@ export interface NewCommandOptions {
   yes?: boolean;
   dryRun?: boolean;
   verbose?: boolean;
+  skipMascot?: boolean;
+  fancy?: boolean;
   install?: boolean;
   git?: boolean;
   withAnalysis?: boolean;
@@ -45,6 +48,11 @@ export interface NewContext {
   yes: boolean;
   dryRun: boolean;
   verbose: boolean;
+  skipMascot: boolean;
+
+  // Personality — frozen at startup
+  mascot: Mascot;
+  cliVersion: string;
 
   // Deferred work — populated by I/O actions, drained by core/tasks.runTasks.
   tasks: Task<NewContext>[];
@@ -145,7 +153,11 @@ export function resolveMcpRuneLocalSpec(raw: string): string {
   return `${prefix}${abs}`;
 }
 
-export function buildNewContext(projectName: string, opts: NewCommandOptions): NewContext {
+export function buildNewContext(
+  projectName: string,
+  opts: NewCommandOptions,
+  meta: { cliVersion: string } = { cliVersion: '0.0.0' },
+): NewContext {
   assertTemplateExclusivity(opts);
   assertAdvancedOnly(opts);
 
@@ -163,10 +175,15 @@ export function buildNewContext(projectName: string, opts: NewCommandOptions): N
   else if (opts.preset || opts.yes) scaffoldMode = 'preset';
   // else: leave undefined — actions/scaffold-mode.ts will prompt.
 
+  const skipMascot = resolveSkipMascot(opts);
+
   return {
     yes: opts.yes === true,
     dryRun: opts.dryRun === true,
     verbose: opts.verbose === true,
+    skipMascot,
+    mascot: pickMascot(),
+    cliVersion: meta.cliVersion,
     tasks: [],
     projectName,
     targetDir,
@@ -189,4 +206,13 @@ export function buildNewContext(projectName: string, opts: NewCommandOptions): N
     install: opts.install !== false,
     git: opts.git !== false,
   };
+}
+
+function resolveSkipMascot(opts: NewCommandOptions): boolean {
+  if (opts.skipMascot === true) return true;
+  if (opts.fancy === true) return false;
+  if (process.env.CI === '1' || process.env.CI === 'true') return true;
+  if (!process.stdout.isTTY) return true;
+  if (platform() === 'win32') return true;
+  return false;
 }

@@ -33,6 +33,8 @@ export async function run(argv: string[]): Promise<void> {
     .option('--yes', 'skip the wizard and use preset defaults')
     .option('--dry-run', 'print the tasks that would run; write nothing to disk')
     .option('--verbose', 'stream subprocess output (e.g. npm install) instead of a spinner')
+    .option('--skip-mascot', 'suppress the banner and mascot lines (auto-on in CI/non-TTY)')
+    .option('--fancy', 'force the banner and mascot on (overrides CI/non-TTY auto-skip)')
     .option('--no-install', "don't run npm install after scaffolding")
     .option('--no-git', "don't initialize a git repo")
     .option('--with-analysis', 'enable the analysis module (Docker pgvector)')

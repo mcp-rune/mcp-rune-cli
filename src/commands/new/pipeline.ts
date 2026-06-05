@@ -1,6 +1,7 @@
 import { architecture } from './actions/architecture.js';
 import { auth } from './actions/auth.js';
 import { fetchTemplate } from './actions/fetch-template.js';
+import { intro } from './actions/intro.js';
 import { models } from './actions/models.js';
 import { observability } from './actions/observability.js';
 import { postScaffold } from './actions/post-scaffold.js';
@@ -8,6 +9,7 @@ import { preset } from './actions/preset.js';
 import { render } from './actions/render.js';
 import { scaffoldHeader } from './actions/scaffold-header.js';
 import { scaffoldMode } from './actions/scaffold-mode.js';
+import { summary } from './actions/summary.js';
 import { toggles } from './actions/toggles.js';
 import { transport } from './actions/transport.js';
 import type { NewContext } from './context.js';
@@ -17,6 +19,7 @@ import type { NewContext } from './context.js';
 // onto ctx.tasks by render / fetchTemplate / postScaffold and run later by
 // core/tasks.runTasks(). nextSteps prints the outro after the task block.
 const STEPS = [
+  intro,
   scaffoldMode,
   preset,
   models,
@@ -25,6 +28,7 @@ const STEPS = [
   architecture,
   auth,
   observability,
+  summary,
   scaffoldHeader,
   render,
   fetchTemplate,
