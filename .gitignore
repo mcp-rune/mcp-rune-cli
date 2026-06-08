@@ -7,6 +7,9 @@ coverage/
 .vitest-cache/
 *.tsbuildinfo
 
+# Local npm pack output
+*.tgz
+
 # Editor / IDE / agent local state
 .claude/
 .husky/
