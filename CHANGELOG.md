@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.9.1] - 2026-06-08
+
+### Added
+
+- `LICENSE` — MIT license file (copyright David Sáenz Tagarro).
+
+### Changed
+
+- `README.md` — badge row added under the title: CI status, MIT licence shield, MCP SDK version.
+
+[0.9.1]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.9.0...v0.9.1
+
 ## [0.9.0] - 2026-06-08
 
 > Two big things: the advanced wizard is now an Astro-style **chapter walk** through the scaffolded app (Models · Prompts · Tools · Apps · Layers · Server), and every framework extension point gets a real customizable stub instead of a TODO comment. Default pin moves to **@mcp-rune/mcp-rune ^0.97.0**; templates are updated for that version's renames (`PromptContentGenerator` → `PromptContentBuilder`, `/services` → `/runtime`, `BaseModel` to `/models`, `SearchAdapter` → `SearchRequestShaper`, snake-case `PaginationInfo`).

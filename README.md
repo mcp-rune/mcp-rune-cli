@@ -1,5 +1,9 @@
 # @mcp-rune/create
 
+[![CI](https://github.com/mcp-rune/mcp-rune-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/mcp-rune/mcp-rune-cli/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![MCP SDK](https://img.shields.io/badge/MCP_SDK-1.x-blue)](https://github.com/modelcontextprotocol/typescript-sdk)
+
 Scaffolder for [mcp-rune](https://github.com/mcp-rune/mcp-rune)-based MCP servers.
 
 ## Production installation
