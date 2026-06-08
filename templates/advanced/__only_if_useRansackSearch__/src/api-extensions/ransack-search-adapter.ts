@@ -1,24 +1,22 @@
 /**
- * Ransack search adapter — starter scaffolded by
+ * Ransack search request shaper — starter scaffolded by
  * `rune new --search-adapter ransack`.
  *
- * Targets Rails backends using the Ransack gem, which expects filters under a
- * single `q` parameter using `field_predicate` suffixes (e.g. `q[name_eq]`,
- * `q[created_at_gt]`). Customize as your search endpoint requires.
+ * Rails backends using the Ransack gem expect filters under a single `q`
+ * parameter with `field_predicate` suffixes (e.g. `q[name_eq]`,
+ * `q[created_at_gt]`). This subclass of the framework's
+ * `SearchRequestShaper` builds that envelope; tweak the predicate logic for
+ * your endpoint as needed.
+ *
+ * For complete Rails coverage (filter nesting + range mappings) consider
+ * `RailsSearchRequestShaper` from `@mcp-rune/mcp-rune/api-extensions/search`
+ * instead.
  */
 
-import { SearchAdapter } from '@mcp-rune/mcp-rune/api-extensions/search'
+import { SearchRequestShaper } from '@mcp-rune/mcp-rune/api-extensions/search'
+import type { Pagination, SearchConfig } from '@mcp-rune/mcp-rune/api-extensions/search'
 
-interface Pagination {
-  page: number
-  perPage: number
-}
-
-interface SearchConfig {
-  query?: { queryParam?: string; expand?: string[] }
-}
-
-export class RansackSearchAdapter extends SearchAdapter {
+export class RansackSearchAdapter extends SearchRequestShaper {
   override buildBody(
     query: string | null,
     filters: Record<string, unknown> | undefined,

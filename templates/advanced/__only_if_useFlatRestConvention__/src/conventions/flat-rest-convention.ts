@@ -7,12 +7,11 @@
  */
 
 import type {
-  BelongsToAssociation,
   FieldDefinition,
-  HasManyAssociation,
   NormalizedListResponse
 } from '@mcp-rune/mcp-rune/api-conventions'
 import { BaseConvention } from '@mcp-rune/mcp-rune/api-conventions'
+import type { BelongsToAssociation, HasManyAssociation } from '@mcp-rune/mcp-rune/models'
 
 export class FlatRestConvention extends BaseConvention {
   override get name(): string {
@@ -38,7 +37,7 @@ export class FlatRestConvention extends BaseConvention {
   }
 
   override normalizeListResponse(
-    response: unknown,
+    response: Record<string, unknown> | unknown[],
     { page, perPage }: { page: number; perPage: number }
   ): NormalizedListResponse {
     const records = pickRecords(response)
@@ -47,14 +46,14 @@ export class FlatRestConvention extends BaseConvention {
       records,
       pagination: {
         page,
-        perPage,
+        per_page: perPage,
         total,
-        totalPages: Math.max(1, Math.ceil(total / perPage))
+        total_pages: Math.max(1, Math.ceil(total / perPage))
       }
     }
   }
 
-  override cleanResponse<T>(data: T): T {
+  override cleanResponse(data: unknown): unknown {
     return data
   }
 }

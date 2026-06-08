@@ -11,6 +11,7 @@ type Ctx = Pick<
   | 'transport'
   | 'withAnalysis'
   | 'withDomain'
+  | 'toolClasses'
   | 'apiConvention'
   | 'apiClient'
   | 'serverAuth'
@@ -18,6 +19,9 @@ type Ctx = Pick<
   | 'logger'
   | 'errorTracking'
   | 'tracing'
+  | 'vectorStorage'
+  | 'sharedModelAttrs'
+  | 'promptStrategies'
   | 'modelsRaw'
   | 'mcpRuneVersion'
   | 'tasks'
@@ -36,6 +40,7 @@ export async function render(ctx: Ctx): Promise<void> {
         transport: c.transport,
         withAnalysis: c.withAnalysis,
         withDomain: c.withDomain,
+        toolClasses: c.toolClasses,
         apiConvention: c.apiConvention,
         apiClient: c.apiClient,
         serverAuth: c.serverAuth,
@@ -43,6 +48,9 @@ export async function render(ctx: Ctx): Promise<void> {
         logger: c.logger,
         errorTracking: c.errorTracking,
         tracing: c.tracing,
+        vectorStorage: c.vectorStorage,
+        sharedModelAttrs: c.sharedModelAttrs,
+        promptStrategies: c.promptStrategies,
         models: c.modelsRaw,
         mcpRuneVersion: c.mcpRuneVersion,
       });

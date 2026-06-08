@@ -10,6 +10,10 @@ coverage/
 # Local npm pack output
 *.tgz
 
+# Local .npmrc may carry a GH Packages auth token — keep it out of git
+.npmrc
+
 # Editor / IDE / agent local state
 .claude/
 .husky/
+

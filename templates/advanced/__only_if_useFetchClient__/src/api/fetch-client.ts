@@ -22,7 +22,7 @@ interface HttpError extends Error {
 }
 
 export class FetchApiClient implements ApiClient {
-  private baseUrl: string
+  baseUrl: string
   private accessToken?: string
   private convention?: BaseConvention
   private _fetch: typeof fetch

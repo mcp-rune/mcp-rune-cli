@@ -2,13 +2,23 @@ export type Preset = 'simple' | 'advanced';
 
 export type Transport = 'stdio' | 'http' | 'both';
 
-export type ApiConvention = 'jsonapi' | 'rest-flat';
-export type ApiClientChoice = 'none' | 'fetch';
+export type ApiConvention = 'jsonapi' | 'rest-flat' | 'custom';
+export type ApiClientChoice = 'none' | 'fetch' | 'axios' | 'custom';
 export type ServerAuth = 'oauth' | 'static-token';
-export type SearchAdapterChoice = 'none' | 'ransack';
+export type SearchAdapterChoice = 'none' | 'ransack' | 'custom';
 export type LoggerChoice = 'framework' | 'pino';
 export type ErrorTrackingChoice = 'none' | 'sentry';
 export type TracingChoice = 'none' | 'langfuse';
+
+export type ToolClass = 'strategy' | 'data' | 'analysis' | 'operations' | 'domain';
+export const ALL_TOOL_CLASSES: readonly ToolClass[] = [
+  'strategy',
+  'data',
+  'analysis',
+  'operations',
+  'domain',
+];
+export type PromptStrategyChoice = 'default' | 'custom';
 
 export type AttrType = 'string' | 'text' | 'integer' | 'enum' | 'datetime' | 'boolean';
 
@@ -33,6 +43,7 @@ export interface Answers {
   transport: Transport;
   withAnalysis: boolean;
   withDomain: boolean;
+  toolClasses: ToolClass[];
   apiConvention: ApiConvention;
   apiClient: ApiClientChoice;
   serverAuth: ServerAuth;
@@ -40,6 +51,9 @@ export interface Answers {
   logger: LoggerChoice;
   errorTracking: ErrorTrackingChoice;
   tracing: TracingChoice;
+  vectorStorage: boolean;
+  sharedModelAttrs: boolean;
+  promptStrategies: Record<string, PromptStrategyChoice>;
   models: Model[] | string | undefined;
   mcpRuneVersion?: string;
   nodeEngine?: string;
@@ -57,12 +71,20 @@ export interface TemplateVars {
   hasStdio: boolean;
   /** Derived booleans driving __only_if_<X>__ subtrees and EJS conditionals. */
   useFlatRestConvention: boolean;
+  useCustomConvention: boolean;
   useFetchClient: boolean;
+  useAxiosClient: boolean;
+  useCustomApiClient: boolean;
   useStaticTokenAuth: boolean;
   useRansackSearch: boolean;
+  useCustomSearch: boolean;
+  useVectorStorage: boolean;
+  useSharedModelAttrs: boolean;
   usePinoLogger: boolean;
   useSentry: boolean;
   useLangfuse: boolean;
+  toolClasses: ToolClass[];
+  promptStrategies: Record<string, PromptStrategyChoice>;
   models: Model[];
   mcpRuneVersion: string;
   nodeEngine: string;

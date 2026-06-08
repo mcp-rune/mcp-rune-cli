@@ -10,8 +10,10 @@ import type {
   LoggerChoice,
   Model,
   Preset,
+  PromptStrategyChoice,
   SearchAdapterChoice,
   ServerAuth,
+  ToolClass,
   TracingChoice,
   Transport,
 } from '../../types.js';
@@ -32,6 +34,7 @@ export interface NewCommandOptions {
   transport?: Transport;
   models?: string;
   mcpRuneLocal?: string;
+  toolClasses?: ToolClass[];
   apiConvention?: ApiConvention;
   apiClient?: ApiClientChoice;
   serverAuth?: ServerAuth;
@@ -39,6 +42,8 @@ export interface NewCommandOptions {
   logger?: LoggerChoice;
   errorTracking?: ErrorTrackingChoice;
   tracing?: TracingChoice;
+  vectorStorage?: boolean;
+  sharedModelAttrs?: boolean;
 }
 
 export type ScaffoldMode = 'preset' | 'template' | 'offlineTemplate';
@@ -74,6 +79,7 @@ export interface NewContext {
   transport?: Transport;
   withAnalysis?: boolean;
   withDomain?: boolean;
+  toolClasses?: ToolClass[];
   apiConvention?: ApiConvention;
   apiClient?: ApiClientChoice;
   serverAuth?: ServerAuth;
@@ -81,6 +87,9 @@ export interface NewContext {
   logger?: LoggerChoice;
   errorTracking?: ErrorTrackingChoice;
   tracing?: TracingChoice;
+  vectorStorage?: boolean;
+  sharedModelAttrs?: boolean;
+  promptStrategies?: Record<string, PromptStrategyChoice>;
   modelsRaw?: string;
   models?: Model[];
 
@@ -97,6 +106,9 @@ const EXTENSION_FLAG_NAMES = [
   ['logger', '--logger'],
   ['errorTracking', '--error-tracking'],
   ['tracing', '--tracing'],
+  ['vectorStorage', '--vector-storage'],
+  ['sharedModelAttrs', '--shared-model-attrs'],
+  ['toolClasses', '--tool-classes'],
 ] as const;
 
 const PRESET_ONLY_FLAGS = [
@@ -195,6 +207,7 @@ export function buildNewContext(
     transport: opts.transport,
     withAnalysis: opts.withAnalysis,
     withDomain: opts.withDomain,
+    toolClasses: opts.toolClasses,
     apiConvention: opts.apiConvention,
     apiClient: opts.apiClient,
     serverAuth: opts.serverAuth,
@@ -202,6 +215,8 @@ export function buildNewContext(
     logger: opts.logger,
     errorTracking: opts.errorTracking,
     tracing: opts.tracing,
+    vectorStorage: opts.vectorStorage,
+    sharedModelAttrs: opts.sharedModelAttrs,
     modelsRaw: opts.models,
     install: opts.install !== false,
     git: opts.git !== false,

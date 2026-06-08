@@ -1,6 +1,6 @@
 {
   "name": "@mcp-rune/create",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "description": "Scaffolder for mcp-rune-based MCP servers",
   "type": "module",
   "bin": {

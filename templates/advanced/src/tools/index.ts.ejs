@@ -12,14 +12,14 @@
 
 import type { ApiClient } from '@mcp-rune/mcp-rune/core'
 import type { DomainRegistry } from '@mcp-rune/mcp-rune/domain'
-import { STRATEGY_TOOL_CLASSES } from '@mcp-rune/mcp-rune/prompts'
 import type { PromptRegistry } from '@mcp-rune/mcp-rune/prompts'
-import { vectorStorage } from '@mcp-rune/mcp-rune/services'
+import { vectorStorage } from '@mcp-rune/mcp-rune/runtime'
 import type { ModelsRegistry, ServerContext, ToolClassMap } from '@mcp-rune/mcp-rune/tools'
 import {
   ANALYSIS_TOOL_CLASSES,
   DATA_TOOL_CLASSES,
   DOMAIN_TOOL_CLASSES,
+  FORM_STRATEGY_TOOL_CLASSES,
   OPERATIONS_TOOL_CLASSES,
   ToolRegistry
 } from '@mcp-rune/mcp-rune/tools'
@@ -27,15 +27,27 @@ import {
 <% if (useFetchClient) { -%>
 import { FetchApiClient } from '../api/fetch-client.js'
 <% } -%>
+<% if (useAxiosClient) { -%>
+import { AxiosApiClient } from '../api/axios-client.js'
+<% } -%>
+<% if (useCustomApiClient) { -%>
+import { CustomApiClient } from '../api/custom-client.js'
+<% } -%>
 <% if (useFlatRestConvention) { -%>
 import { flatRestConvention } from '../conventions/flat-rest-convention.js'
+<% } -%>
+<% if (useCustomConvention) { -%>
+import { customConvention } from '../conventions/custom-convention.js'
 <% } -%>
 <% if (useRansackSearch) { -%>
 import { ransackSearchAdapter } from '../api-extensions/ransack-search-adapter.js'
 <% } -%>
+<% if (useCustomSearch) { -%>
+import { customSearchAdapter } from '../api-extensions/custom-search-adapter.js'
+<% } -%>
 
 const ALL_TOOL_CLASSES: ToolClassMap = {
-  ...STRATEGY_TOOL_CLASSES,
+  ...FORM_STRATEGY_TOOL_CLASSES,
   ...DATA_TOOL_CLASSES,
   ...ANALYSIS_TOOL_CLASSES,
   ...OPERATIONS_TOOL_CLASSES,
@@ -77,11 +89,24 @@ function selectToolClasses(profile: Profile): ToolClassMap {
 
 export function createToolRegistry(deps: CreateToolRegistryDeps): ToolRegistry {
   const createApiClient = (token: string): ApiClient => {
+<% const conventionExpr = useFlatRestConvention ? 'flatRestConvention' : useCustomConvention ? 'customConvention' : null -%>
 <% if (useFetchClient) { -%>
     return new FetchApiClient({
       baseUrl: deps.apiUrl,
-      accessToken: token<% if (useFlatRestConvention) { %>,
-      convention: flatRestConvention<% } %>
+      accessToken: token<% if (conventionExpr) { %>,
+      convention: <%= conventionExpr %><% } %>
+    })
+<% } else if (useAxiosClient) { -%>
+    return new AxiosApiClient({
+      baseUrl: deps.apiUrl,
+      accessToken: token<% if (conventionExpr) { %>,
+      convention: <%= conventionExpr %><% } %>
+    })
+<% } else if (useCustomApiClient) { -%>
+    return new CustomApiClient({
+      baseUrl: deps.apiUrl,
+      accessToken: token<% if (conventionExpr) { %>,
+      convention: <%= conventionExpr %><% } %>
     })
 <% } else { -%>
     // TODO: replace with your real ApiClient. The Proxy makes a missing

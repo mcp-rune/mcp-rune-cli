@@ -2,14 +2,22 @@
  * Pino logger — starter scaffolded by `rune new --logger pino`.
  *
  * Re-exports a pino instance shaped to match the surface mcp-rune's built-in
- * logger exposes: `info / warn / error / debug` + `setApp(name)`. Project
- * code imports from this file; the framework keeps using its own logger
- * internally.
+ * logger exposes: `info / warn / error / debug` + `setApp(name)` + `child(meta)`.
+ * Project code imports from this file; the framework keeps using its own
+ * logger internally.
  */
 
 import pino from 'pino'
 
 type LogMethod = 'info' | 'warn' | 'error' | 'debug'
+
+interface ChildLogger {
+  info: (message: string, meta?: Record<string, unknown>) => void
+  warn: (message: string, meta?: Record<string, unknown>) => void
+  error: (message: string, meta?: Record<string, unknown>) => void
+  debug: (message: string, meta?: Record<string, unknown>) => void
+  child: (meta: Record<string, unknown>) => ChildLogger
+}
 
 const base = pino({
   level: process.env.LOG_LEVEL ?? 'info',
@@ -22,16 +30,33 @@ const base = pino({
 
 let appName = process.env.MCP_SERVER_NAME ?? 'app'
 
-function withApp(method: LogMethod): (message: string, meta?: Record<string, unknown>) => void {
-  return (message, meta = {}) => base[method]({ app: appName, ...meta }, message)
+function emit(method: LogMethod, bound: Record<string, unknown>) {
+  return (message: string, meta: Record<string, unknown> = {}): void => {
+    base[method]({ app: appName, ...bound, ...meta }, message)
+  }
+}
+
+function buildChild(bound: Record<string, unknown>): ChildLogger {
+  return {
+    info: emit('info', bound),
+    warn: emit('warn', bound),
+    error: emit('error', bound),
+    debug: emit('debug', bound),
+    child(extra) {
+      return buildChild({ ...bound, ...extra })
+    }
+  }
 }
 
 export const logger = {
-  info: withApp('info'),
-  warn: withApp('warn'),
-  error: withApp('error'),
-  debug: withApp('debug'),
+  info: emit('info', {}),
+  warn: emit('warn', {}),
+  error: emit('error', {}),
+  debug: emit('debug', {}),
   setApp(name: string): void {
     appName = name
+  },
+  child(meta: Record<string, unknown> = {}): ChildLogger {
+    return buildChild(meta)
   }
 }

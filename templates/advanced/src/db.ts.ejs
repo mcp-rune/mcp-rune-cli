@@ -4,7 +4,7 @@ type Pool = InstanceType<typeof pg.Pool>
 <% if (usePinoLogger) { -%>
 import { logger } from './observability/logger.js'
 <% } else { -%>
-import { logger } from '@mcp-rune/mcp-rune/services'
+import { logger } from '@mcp-rune/mcp-rune/runtime'
 <% } -%>
 
 let pool: Pool | null = null

@@ -12,16 +12,18 @@ type Ctx = Pick<
   'scaffoldMode' | 'preset' | 'apiConvention' | 'apiClient' | 'searchAdapter' | 'yes'
 >;
 
-export async function architecture(ctx: Ctx): Promise<void> {
+export async function apps(ctx: Ctx): Promise<void> {
   if (ctx.scaffoldMode !== 'preset') return;
   if (ctx.preset !== 'advanced') return;
+  if (ctx.yes) return;
 
-  if (ctx.apiConvention === undefined && !ctx.yes) {
+  if (ctx.apiConvention === undefined) {
     const value = await select<ApiConvention>({
       message: 'API convention?',
       options: [
-        { value: 'jsonapi', label: 'jsonapi — framework default (JSON:API wire format)' },
-        { value: 'rest-flat', label: 'rest-flat — starter (flat REST, no envelope)' },
+        { value: 'jsonapi', label: 'jsonapi — JSON:API wire format' },
+        { value: 'rest-flat', label: 'rest-flat — flat REST, no envelope' },
+        { value: 'custom', label: 'custom — scaffold a BaseConvention stub' },
       ],
       initialValue: 'jsonapi',
     });
@@ -29,12 +31,14 @@ export async function architecture(ctx: Ctx): Promise<void> {
     ctx.apiConvention = value;
   }
 
-  if (ctx.apiClient === undefined && !ctx.yes) {
+  if (ctx.apiClient === undefined) {
     const value = await select<ApiClientChoice>({
       message: 'API client?',
       options: [
-        { value: 'none', label: 'none — leave a placeholder for you to fill in' },
-        { value: 'fetch', label: 'fetch — starter implementation using native fetch' },
+        { value: 'none', label: 'none — placeholder' },
+        { value: 'fetch', label: 'fetch — native fetch starter' },
+        { value: 'axios', label: 'axios — ApiClient over axios' },
+        { value: 'custom', label: 'custom — scaffold an ApiClient stub' },
       ],
       initialValue: 'none',
     });
@@ -42,12 +46,13 @@ export async function architecture(ctx: Ctx): Promise<void> {
     ctx.apiClient = value;
   }
 
-  if (ctx.searchAdapter === undefined && !ctx.yes) {
+  if (ctx.searchAdapter === undefined) {
     const value = await select<SearchAdapterChoice>({
       message: 'Search adapter?',
       options: [
-        { value: 'none', label: 'none — framework default (flat filter spread)' },
-        { value: 'ransack', label: 'ransack — starter for Rails Ransack q[...] syntax' },
+        { value: 'none', label: 'none — framework default' },
+        { value: 'ransack', label: 'ransack — Rails Ransack q[...] starter' },
+        { value: 'custom', label: 'custom — scaffold a SearchAdapter stub' },
       ],
       initialValue: 'none',
     });
