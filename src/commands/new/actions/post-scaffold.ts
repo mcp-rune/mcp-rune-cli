@@ -26,6 +26,16 @@ export async function postScaffold(ctx: Ctx): Promise<void> {
         await execa('npm', ['install'], {
           cwd: c.targetDir,
           stdio: c.verbose ? 'inherit' : 'pipe',
+          env: {
+            ...process.env,
+            // @huggingface/transformers (transitive via @mcp-rune/mcp-rune)
+            // pulls sharp. On machines with a global libvips (e.g. `brew
+            // install vips`), sharp's install/check.js skips its prebuilt
+            // binary and tries to build from source, which fails because
+            // node-addon-api isn't in its runtime deps. Always prefer the
+            // prebuilt — sharp ships one for every common platform.
+            SHARP_IGNORE_GLOBAL_LIBVIPS: '1',
+          },
         });
       },
       onError(err) {
