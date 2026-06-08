@@ -78,6 +78,42 @@ lands.
   types that should not appear in the emitted JavaScript.
 - Tests run with vitest (`npm test`); build with `npm run build`.
 
+## Example & template config layout
+
+Any `config.ts` we ship — under `templates/advanced/config/`, the `simple`
+preset's `src/config.ts`, or the example servers in `mcp-rune-examples/` —
+should be organized as a **tutorial walkthrough through the framework's own
+layers**, not by registry-construction order or alphabetical option
+grouping. Chapter order:
+
+1. **Models** (`MODEL_CLASSES`)
+2. **Prompts** (`promptRegistry` + per-prompt `promptContent` authoring)
+3. **Tools** (`ToolRegistry`)
+4. **Apps** (`createDefaultAppRegistry` or hand-composed app registry)
+5. **Data Layer** (`createInMemoryDataLayer` / `ModelService` + adapter)
+6. **Model Layer** (`createApiClient` factory + `defaultConvention` seam)
+7. **Server wiring** (the exported `mcpConfig` consumed by `StdioServer` /
+   `HttpServer`)
+
+Each chapter has a banner comment, the active wiring (often wrapped in a
+`buildXRegistry()` builder so dependency order can stay free of TDZ
+hazards), and an adjacent commented-out "advanced options" block listing
+every public knob in that layer with one-line explanations. The final
+chapter composes the builders in dependency order.
+
+The goal is that appending option N+1 in chapter K must be one edit in one
+place. Inspiration: Astro's single-object `astro.config.mjs` (one grouped
+surface per concern) and `@mcp-rune/mcp-rune`'s own `src/mcp/<layer>/`
+folder layout.
+
+When introducing a new public knob in `@mcp-rune/mcp-rune`, the same PR
+should add a commented entry to the matching chapter in the canonical
+example (`mcp-rune-examples/bookshelf/config.ts`), and — when the knob is
+meaningful enough to demonstrate end-to-end — a runnable use in
+`mcp-rune-examples/bookshelf-advanced/`. If the change also affects the
+scaffolded user surface, propagate to the corresponding chapter under
+`templates/advanced/config/`.
+
 ## Smoke testing `rune inspect`
 
 `rune inspect` shells out to `npx @modelcontextprotocol/inspector`, which
