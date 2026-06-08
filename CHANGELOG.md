@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.8.1] - 2026-06-08
+
+> Post-0.8.0 polish: noisier CI gets quieter, scaffold smoke covers every transport variant, and `npm pack` artifacts stop landing in `git status`.
+
+### Added
+
+- **Scaffold-typecheck smoke covers all four transport variants** (`simple`, `advanced-stdio`, `advanced-http`, `advanced-both`) so the conditional `__only_if_hasHttp__` / `__only_if_hasStdio__` gates introduced in v0.8.0 are exercised end-to-end.
+
+### Changed
+
+- **CI opts the GitHub Actions runtime into Node 24** (`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true`), silencing the Node 20 deprecation warning that was printed on every job.
+- **`.gitignore` ignores `*.tgz`** (npm pack output) so local pack artifacts don't show up in `git status`.
+
 ## [0.8.0] - 2026-06-05
 
 > Both presets are now TypeScript end-to-end and verified by CI. The scaffolded projects emit `.ts` source, `tsconfig.json` with `strict: true`, and use `tsx` for `npm start`. The legacy hand-rolled prompt/tool registries are gone — scaffolds use the library's `BasePromptRegistry` / `ToolRegistry` directly, which removes ~250 lines of bespoke registry code per project and keeps the cli aligned with `@mcp-rune/mcp-rune`'s public surface (now pinned at `^0.73.8`).
@@ -27,6 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 - **`templates/advanced/src/prompts/registry.ts`** — 200-line custom `PromptRegistry` superseded by `BasePromptRegistry` from the library.
 
+[0.8.1]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.7.0...v0.8.0
 
 ## [0.7.0] - 2026-06-05
