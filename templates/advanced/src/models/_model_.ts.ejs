@@ -1,5 +1,5 @@
-import type { AttributeDefinition } from '@mcp-rune/mcp-rune/core'
-import { BaseModel } from '@mcp-rune/mcp-rune/core'
+import type { AttributeDefinition } from '@mcp-rune/mcp-rune/models'
+import { BaseModel } from '@mcp-rune/mcp-rune/models'
 
 export class <%= model.namePascal %> extends BaseModel {
   static override description = '<%= model.description || `A ${model.name} record` %>'

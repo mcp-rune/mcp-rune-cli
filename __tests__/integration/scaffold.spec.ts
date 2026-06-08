@@ -235,4 +235,111 @@ describe('advanced preset', () => {
     expect(env).toMatch(/^# SENTRY_DSN=/m);
     expect(env).toMatch(/^# LANGFUSE_PUBLIC_KEY=/m);
   });
+
+  it('emits custom-convention stub and wires it when --api-convention=custom', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced', {
+      apiConvention: 'custom',
+      apiClient: 'fetch',
+    });
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    expect(existsSync(join(outDir, 'src/conventions/custom-convention.ts'))).toBe(true);
+    expect(existsSync(join(outDir, 'src/conventions/flat-rest-convention.ts'))).toBe(false);
+    const tools = readFileSync(join(outDir, 'src/tools/index.ts'), 'utf8');
+    expect(tools).toContain("from '../conventions/custom-convention.js'");
+    expect(tools).toContain('convention: customConvention');
+  });
+
+  it('emits axios client + axios dep when --api-client=axios', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced', { apiClient: 'axios' });
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    expect(existsSync(join(outDir, 'src/api/axios-client.ts'))).toBe(true);
+    expect(existsSync(join(outDir, 'src/api/fetch-client.ts'))).toBe(false);
+    const tools = readFileSync(join(outDir, 'src/tools/index.ts'), 'utf8');
+    expect(tools).toContain('new AxiosApiClient');
+
+    const pkg = JSON.parse(readFileSync(join(outDir, 'package.json'), 'utf8'));
+    expect(pkg.dependencies.axios).toBeTruthy();
+  });
+
+  it('does not add axios to package.json without --api-client=axios', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced', { apiClient: 'fetch' });
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    const pkg = JSON.parse(readFileSync(join(outDir, 'package.json'), 'utf8'));
+    expect(pkg.dependencies.axios).toBeUndefined();
+  });
+
+  it('emits custom api client stub and wires it when --api-client=custom', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced', { apiClient: 'custom' });
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    expect(existsSync(join(outDir, 'src/api/custom-client.ts'))).toBe(true);
+    const tools = readFileSync(join(outDir, 'src/tools/index.ts'), 'utf8');
+    expect(tools).toContain('new CustomApiClient');
+    expect(tools).not.toContain('inject your API client here');
+  });
+
+  it('emits custom search adapter when --search-adapter=custom', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced', { searchAdapter: 'custom' });
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    expect(existsSync(join(outDir, 'src/api-extensions/custom-search-adapter.ts'))).toBe(true);
+    expect(existsSync(join(outDir, 'src/api-extensions/ransack-search-adapter.ts'))).toBe(false);
+    const tools = readFileSync(join(outDir, 'src/tools/index.ts'), 'utf8');
+    expect(tools).toContain("from '../api-extensions/custom-search-adapter.js'");
+  });
+
+  it('emits vector storage hook stub when --vector-storage', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced', { vectorStorage: true });
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    expect(existsSync(join(outDir, 'src/storage/vector-store.ts'))).toBe(true);
+  });
+
+  it('omits vector storage stub by default', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced');
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    expect(existsSync(join(outDir, 'src/storage/vector-store.ts'))).toBe(false);
+  });
+
+  it('emits shared AppBaseModel when --shared-model-attrs', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced', { sharedModelAttrs: true });
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    expect(existsSync(join(outDir, 'src/models/app-base-model.ts'))).toBe(true);
+    const body = readFileSync(join(outDir, 'src/models/app-base-model.ts'), 'utf8');
+    expect(body).toContain('class AppBaseModel extends BaseModel');
+  });
+
+  it('omits AppBaseModel by default', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced');
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    expect(existsSync(join(outDir, 'src/models/app-base-model.ts'))).toBe(false);
+  });
+
+  it('combining custom convention + axios produces wiring that references both', async () => {
+    const { outDir: dir, templateUrl, ans } = scaffold('advanced', {
+      apiConvention: 'custom',
+      apiClient: 'axios',
+    });
+    outDir = dir;
+    await renderTemplate(templateUrl, outDir, ans);
+
+    const tools = readFileSync(join(outDir, 'src/tools/index.ts'), 'utf8');
+    expect(tools).toContain('AxiosApiClient');
+    expect(tools).toContain('customConvention');
+  });
 });

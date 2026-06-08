@@ -10,7 +10,7 @@ const pkg = JSON.parse(
   readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
 ) as { version: string };
 
-export async function run(argv: string[]): Promise<void> {
+export function buildProgram(): Command {
   const program = new Command();
 
   program
@@ -45,13 +45,15 @@ export async function run(argv: string[]): Promise<void> {
       '--mcp-rune-local <path>',
       'use a local checkout of @mcp-rune/mcp-rune (writes file:<abs-path> into package.json; also reads MCP_RUNE_LOCAL_PATH)',
     )
-    .option('--api-convention <kind>', 'jsonapi (default) | rest-flat (advanced only)')
-    .option('--api-client <kind>', 'none (default) | fetch (advanced only)')
+    .option('--api-convention <kind>', 'jsonapi (default) | rest-flat | custom (advanced only)')
+    .option('--api-client <kind>', 'none (default) | fetch | axios | custom (advanced only)')
     .option('--server-auth <kind>', 'oauth (default) | static-token (advanced + http)')
-    .option('--search-adapter <kind>', 'none (default) | ransack (advanced only)')
+    .option('--search-adapter <kind>', 'none (default) | ransack | custom (advanced only)')
     .option('--logger <kind>', 'framework (default) | pino (advanced only)')
     .option('--error-tracking <kind>', 'none (default) | sentry (advanced only)')
     .option('--tracing <kind>', 'none (default) | langfuse (advanced only)')
+    .option('--vector-storage', 'scaffold a vector storage hook stub (advanced only)')
+    .option('--shared-model-attrs', 'scaffold a shared ModelLayer base class (advanced only)')
     .action(newCommand);
 
   const addCmd = program.command('add').description('Add components to an existing project');
@@ -81,5 +83,9 @@ export async function run(argv: string[]): Promise<void> {
   const dbCmd = program.command('db').description('Database operations for the analysis module');
   dbCmd.command('up').description('Start docker-compose db and run migrations').action(dbUpCommand);
 
-  await program.parseAsync(argv);
+  return program;
+}
+
+export async function run(argv: string[]): Promise<void> {
+  await buildProgram().parseAsync(argv);
 }

@@ -4,6 +4,49 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.9.0] - 2026-06-08
+
+> Two big things: the advanced wizard is now an Astro-style **chapter walk** through the scaffolded app (Models · Prompts · Tools · Apps · Layers · Server), and every framework extension point gets a real customizable stub instead of a TODO comment. Default pin moves to **@mcp-rune/mcp-rune ^0.97.0**; templates are updated for that version's renames (`PromptContentGenerator` → `PromptContentBuilder`, `/services` → `/runtime`, `BaseModel` to `/models`, `SearchAdapter` → `SearchRequestShaper`, snake-case `PaginationInfo`).
+
+### Added
+
+- **Chapter walk for the advanced wizard** — `rune new --preset advanced` now groups its prompts under six one-line section headers (Astro-style; no prose, no per-section explainers). The flat 10-question form survives unchanged on `--yes` and is hidden entirely on Quick / Template. Implemented as a per-step `chapter` field on `PIPELINE`.
+- **New CLI flags** — `--vector-storage`, `--shared-model-attrs`, plus expanded values: `--api-convention=custom`, `--api-client=axios|custom`, `--search-adapter=custom`. Each picks a scaffolded stub that extends the right framework base class.
+- **Six new conditional template trees** under `templates/advanced/__only_if_*__/`:
+  - `useCustomConvention` → `CustomConvention extends BaseConvention` (three override hooks, all TODO).
+  - `useAxiosClient` → `AxiosApiClient implements ApiClient` (axios added as a conditional dependency in `package.json.ejs`).
+  - `useCustomApiClient` → bare `CustomApiClient` skeleton (each verb throws a `TODO implement` until wired).
+  - `useCustomSearch` → `CustomSearchAdapter extends SearchRequestShaper`.
+  - `useVectorStorage` → `enableVectorStorage()` hook against the framework's `vectorStorage` runtime.
+  - `useSharedModelAttrs` → `AppBaseModel extends BaseModel` for cross-model attributes.
+- **`createApiClient` wiring in `templates/advanced/src/tools/index.ts.ejs`** picks the right convention (`flatRestConvention` / `customConvention`) and client (`FetchApiClient` / `AxiosApiClient` / `CustomApiClient`) at scaffold time — no manual import-juggling for the user.
+- **`buildProgram()` export from `src/index.ts`** so the CLI's flag tree is inspectable in tests without `parseAsync` side-effects.
+- **Coverage** — 58 new test cases over 6 files (`cli.spec.ts`, `pipeline.spec.ts`, `actions/{apps,layers,tools,prompts}.spec.ts`) plus extensions to `presets`, `context`, `scaffold`, and `scaffold-typecheck` (three new gated variants: `advanced-custom-convention`, `advanced-axios-vector`, `advanced-custom-everything`).
+
+### Changed
+
+- **Default `mcpRuneVersion` bumped from `^0.73.8` to `^0.97.0`.** All templates updated for the breaking renames in 0.97.0:
+  - `PromptContentGenerator` → `PromptContentBuilder`, `static strategy` → `static formStrategy: FormStrategyType` (in both `simple` and `advanced` per-model prompt templates).
+  - `@mcp-rune/mcp-rune/services` (renamed to `/runtime`) — `errorTracking`, `logger`, `tracing`, `vectorStorage` re-imports updated in `config.ts.ejs`, `db.ts.ejs`, `tools/index.ts.ejs`.
+  - `BaseModel` / `AttributeDefinition` moved from `/core` to `/models` (in `_model_.ts.ejs` for both presets and in the new `AppBaseModel` stub).
+  - `BelongsToAssociation` / `HasManyAssociation` moved from `/api-conventions` to `/models` (convention stubs).
+  - `STRATEGY_TOOL_CLASSES` (in `/prompts`) → `FORM_STRATEGY_TOOL_CLASSES` (in `/tools`).
+  - `SearchAdapter` class removed; `RansackSearchAdapter` and the new `CustomSearchAdapter` now extend `SearchRequestShaper`.
+  - `PaginationInfo` switched to snake_case keys (`per_page`, `total_pages`) — `FlatRestConvention.normalizeListResponse` and the new `CustomConvention` updated.
+  - `BaseConvention.cleanResponse` signature narrowed to `(unknown) => unknown` (was generic).
+  - `BaseConvention.normalizeListResponse` `response` arg narrowed to `Record<string, unknown> | unknown[]`.
+  - `Logger` shape (used by `StartupTracker`) now requires a `child(meta)` method; the pino starter logger adds a recursive `child` implementation.
+  - `ApiClient.baseUrl` now public-optional; `FetchApiClient` and the new `CustomApiClient` drop the `private`/`protected` modifier on `baseUrl`.
+- **Pipeline restructured** — `src/commands/new/pipeline.ts` exposes `PIPELINE` and `shouldPrintChapter` for testability; step order kept; `architecture` and `toggles` actions retired and their logic split into `apps`, `layers`, `tools`, `prompts`.
+- **Bidirectional sync of `withAnalysis` / `withDomain` ↔ `toolClasses`** in `resolveAnswers` so existing callers passing flat booleans keep working alongside the new `toolClasses` field.
+- **`scaffold-typecheck` smoke uses `npm install --ignore-scripts`** so transitive `sharp` (via `@huggingface/transformers`) doesn't fail on macOS without node-gyp; what we actually verify is `tsc --noEmit`, not native builds.
+
+### Removed
+
+- **`src/commands/new/actions/toggles.ts`** and **`architecture.ts`** — replaced by `tools.ts` and `apps.ts` (logic preserved; new files add the multiselect for tool classes and the `custom` options for convention/client/search).
+
+[0.9.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.8.1...v0.9.0
+
 ## [0.8.1] - 2026-06-08
 
 > Post-0.8.0 polish: noisier CI gets quieter, scaffold smoke covers every transport variant, and `npm pack` artifacts stop landing in `git status`.

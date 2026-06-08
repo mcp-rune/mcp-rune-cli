@@ -74,6 +74,40 @@ describe.runIf(canRun())('scaffold typecheck smoke', () => {
         models: 'Book',
         transport: 'both'
       }
+    },
+    {
+      name: 'advanced-custom-convention',
+      answers: {
+        projectName: 'smoke-advanced-custom-convention',
+        preset: 'advanced',
+        models: 'Book',
+        transport: 'both',
+        apiConvention: 'custom'
+      }
+    },
+    {
+      name: 'advanced-axios-vector',
+      answers: {
+        projectName: 'smoke-advanced-axios-vector',
+        preset: 'advanced',
+        models: 'Book',
+        transport: 'both',
+        apiClient: 'axios',
+        vectorStorage: true
+      }
+    },
+    {
+      name: 'advanced-custom-everything',
+      answers: {
+        projectName: 'smoke-advanced-custom-everything',
+        preset: 'advanced',
+        models: 'Book',
+        transport: 'both',
+        apiConvention: 'custom',
+        apiClient: 'custom',
+        searchAdapter: 'custom',
+        sharedModelAttrs: true
+      }
     }
   ]
 
@@ -87,7 +121,17 @@ describe.runIf(canRun())('scaffold typecheck smoke', () => {
 
         // .npmrc in the scaffold already maps the @mcp-rune scope to
         // npm.pkg.github.com; install picks up the token from env.
-        const install = exec('npm', ['install', '--no-audit', '--no-fund'], outDir)
+        //
+        // `--ignore-scripts` skips native build steps in transitive deps
+        // (notably @huggingface/transformers' sharp), which need a working
+        // node-gyp toolchain. Those scripts aren't required to verify our
+        // template typechecks against the published @mcp-rune/mcp-rune
+        // typings — we only care that `tsc --noEmit` passes.
+        const install = exec(
+          'npm',
+          ['install', '--no-audit', '--no-fund', '--ignore-scripts'],
+          outDir
+        )
         if (install.status !== 0) {
           throw new Error(`npm install failed:\n${install.stdout}`)
         }

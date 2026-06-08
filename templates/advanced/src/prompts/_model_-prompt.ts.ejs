@@ -1,13 +1,14 @@
 import {
   BasePrompt,
   derivePromptSchema,
-  PromptContentGenerator
+  PromptContentBuilder
 } from '@mcp-rune/mcp-rune/prompts'
+import type { FormStrategyType } from '@mcp-rune/mcp-rune/prompts'
 
 import { <%= model.namePascal %> } from '../models/<%= model.fileName %>.js'
 
 export class <%= model.namePascal %>Prompt extends BasePrompt {
-  static override strategy = 'hybrid' as const
+  static override formStrategy: FormStrategyType = 'hybrid'
 
   static {
     const schema = derivePromptSchema(<%= model.namePascal %>)
@@ -16,7 +17,7 @@ export class <%= model.namePascal %>Prompt extends BasePrompt {
   }
 
   override get promptContent(): string {
-    return PromptContentGenerator.for(<%= model.namePascal %>Prompt, '<%= model.fileName %>')
+    return PromptContentBuilder.for(<%= model.namePascal %>Prompt, '<%= model.fileName %>')
       .add('# <%= model.namePascal %> guide')
       .standard()
       .toolUsage()

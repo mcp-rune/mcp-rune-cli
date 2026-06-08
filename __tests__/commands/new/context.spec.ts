@@ -118,4 +118,58 @@ describe('buildNewContext', () => {
     expect(buildNewContext('a', {}).git).toBe(true);
     expect(buildNewContext('b', { git: false }).git).toBe(false);
   });
+
+  it('propagates new advanced flags onto the context', () => {
+    const ctx = buildNewContext('p', {
+      preset: 'advanced',
+      apiConvention: 'custom',
+      apiClient: 'axios',
+      searchAdapter: 'custom',
+      vectorStorage: true,
+      sharedModelAttrs: true,
+    });
+    expect(ctx.apiConvention).toBe('custom');
+    expect(ctx.apiClient).toBe('axios');
+    expect(ctx.searchAdapter).toBe('custom');
+    expect(ctx.vectorStorage).toBe(true);
+    expect(ctx.sharedModelAttrs).toBe(true);
+  });
+});
+
+describe('assertAdvancedOnly (new extension flags)', () => {
+  it('rejects --vector-storage with --preset simple', () => {
+    expect(() => assertAdvancedOnly({ preset: 'simple', vectorStorage: true })).toThrow(
+      /--vector-storage is only valid with --preset advanced/,
+    );
+  });
+
+  it('rejects --shared-model-attrs with --yes (defaults to simple)', () => {
+    expect(() => assertAdvancedOnly({ yes: true, sharedModelAttrs: true })).toThrow(
+      /--shared-model-attrs is only valid with --preset advanced/,
+    );
+  });
+
+  it('passes --vector-storage + --shared-model-attrs with --preset advanced', () => {
+    expect(() =>
+      assertAdvancedOnly({
+        preset: 'advanced',
+        vectorStorage: true,
+        sharedModelAttrs: true,
+      }),
+    ).not.toThrow();
+  });
+});
+
+describe('assertTemplateExclusivity (new extension flags)', () => {
+  it('rejects --vector-storage combined with --template', () => {
+    expect(() =>
+      assertTemplateExclusivity({ template: 'bookshelf', vectorStorage: true }),
+    ).toThrow(/--vector-storage cannot be combined/);
+  });
+
+  it('rejects --shared-model-attrs combined with --offline-template', () => {
+    expect(() =>
+      assertTemplateExclusivity({ offlineTemplate: '/x', sharedModelAttrs: true }),
+    ).toThrow(/--shared-model-attrs cannot be combined/);
+  });
 });

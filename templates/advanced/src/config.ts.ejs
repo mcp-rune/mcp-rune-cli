@@ -12,9 +12,9 @@ import { createServer as createServerFactory } from '@mcp-rune/mcp-rune/server'
 import { _setAdapter, OAuthService, PostgresqlAdapter } from '@mcp-rune/mcp-rune/oauth2'
 <% } -%>
 <% if (usePinoLogger) { -%>
-import { errorTracking, tracing, vectorStorage } from '@mcp-rune/mcp-rune/services'
+import { errorTracking, tracing, vectorStorage } from '@mcp-rune/mcp-rune/runtime'
 <% } else { -%>
-import { errorTracking, logger, tracing, vectorStorage } from '@mcp-rune/mcp-rune/services'
+import { errorTracking, logger, tracing, vectorStorage } from '@mcp-rune/mcp-rune/runtime'
 <% } -%>
 
 import { configSchema } from '../config/schema.js'

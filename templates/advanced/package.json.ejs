@@ -32,6 +32,9 @@
   "dependencies": {
     "@mcp-rune/mcp-rune": "<%= mcpRuneVersion %>",
     "dotenv": "^17.3.1",
+<% if (useAxiosClient) { -%>
+    "axios": "^1.7.0",
+<% } -%>
 <% if (usePinoLogger) { -%>
     "pino": "^9.5.0",
 <% } -%>

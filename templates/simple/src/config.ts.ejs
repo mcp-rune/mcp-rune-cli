@@ -1,7 +1,10 @@
 import type { ApiClient } from '@mcp-rune/mcp-rune/core'
-import { STRATEGY_TOOL_CLASSES } from '@mcp-rune/mcp-rune/prompts'
 import { createServer } from '@mcp-rune/mcp-rune/server'
-import { DATA_TOOL_CLASSES, ToolRegistry } from '@mcp-rune/mcp-rune/tools'
+import {
+  DATA_TOOL_CLASSES,
+  FORM_STRATEGY_TOOL_CLASSES,
+  ToolRegistry
+} from '@mcp-rune/mcp-rune/tools'
 
 import { MODEL_CLASSES } from './models/index.js'
 import { promptRegistry } from './prompts/index.js'
@@ -18,7 +21,7 @@ const stubApiClient = new Proxy({} as ApiClient, {
 })
 
 const toolRegistry = new ToolRegistry({
-  toolClasses: { ...DATA_TOOL_CLASSES, ...STRATEGY_TOOL_CLASSES },
+  toolClasses: { ...DATA_TOOL_CLASSES, ...FORM_STRATEGY_TOOL_CLASSES },
   models: MODEL_CLASSES,
   serverContext: {
     name: '<%= projectNamePascal %>'

@@ -6,16 +6,17 @@ import type {
   LoggerChoice,
   Model,
   Preset,
+  PromptStrategyChoice,
   SearchAdapterChoice,
   ServerAuth,
+  ToolClass,
   TracingChoice,
   Transport,
 } from '../../types.js';
 
 interface PresetDefaults {
   transport: Transport;
-  withAnalysis: boolean;
-  withDomain: boolean;
+  toolClasses: ToolClass[];
   apiConvention: ApiConvention;
   apiClient: ApiClientChoice;
   serverAuth: ServerAuth;
@@ -23,7 +24,11 @@ interface PresetDefaults {
   logger: LoggerChoice;
   errorTracking: ErrorTrackingChoice;
   tracing: TracingChoice;
+  vectorStorage: boolean;
+  sharedModelAttrs: boolean;
 }
+
+const BASE_TOOL_CLASSES: ToolClass[] = ['strategy', 'data', 'operations'];
 
 const EXTENSION_DEFAULTS = {
   apiConvention: 'jsonapi',
@@ -33,6 +38,8 @@ const EXTENSION_DEFAULTS = {
   logger: 'framework',
   errorTracking: 'none',
   tracing: 'none',
+  vectorStorage: false,
+  sharedModelAttrs: false,
 } as const satisfies Pick<
   PresetDefaults,
   | 'apiConvention'
@@ -42,19 +49,19 @@ const EXTENSION_DEFAULTS = {
   | 'logger'
   | 'errorTracking'
   | 'tracing'
+  | 'vectorStorage'
+  | 'sharedModelAttrs'
 >;
 
 const PRESETS: Record<Preset, PresetDefaults> = {
   simple: {
     transport: 'stdio',
-    withAnalysis: false,
-    withDomain: false,
+    toolClasses: [...BASE_TOOL_CLASSES],
     ...EXTENSION_DEFAULTS,
   },
   advanced: {
     transport: 'both',
-    withAnalysis: false,
-    withDomain: false,
+    toolClasses: [...BASE_TOOL_CLASSES],
     ...EXTENSION_DEFAULTS,
   },
 };
@@ -62,7 +69,7 @@ const PRESETS: Record<Preset, PresetDefaults> = {
 export function presetDefaults(preset: string): PresetDefaults {
   const defaults = PRESETS[preset as Preset];
   if (!defaults) throw new Error(`unknown preset: ${preset}`);
-  return defaults;
+  return { ...defaults, toolClasses: [...defaults.toolClasses] };
 }
 
 export interface ResolveInput {
@@ -71,6 +78,7 @@ export interface ResolveInput {
   transport?: Transport;
   withAnalysis?: boolean;
   withDomain?: boolean;
+  toolClasses?: ToolClass[];
   apiConvention?: ApiConvention;
   apiClient?: ApiClientChoice;
   serverAuth?: ServerAuth;
@@ -78,6 +86,9 @@ export interface ResolveInput {
   logger?: LoggerChoice;
   errorTracking?: ErrorTrackingChoice;
   tracing?: TracingChoice;
+  vectorStorage?: boolean;
+  sharedModelAttrs?: boolean;
+  promptStrategies?: Record<string, PromptStrategyChoice>;
   models?: Model[] | string;
   mcpRuneVersion?: string;
   nodeEngine?: string;
@@ -86,12 +97,36 @@ export interface ResolveInput {
 export function resolveAnswers(input: ResolveInput): Answers {
   const preset = (input.preset ?? 'simple') as Preset;
   const defaults = presetDefaults(preset);
+  const merged = { ...defaults, ...stripUndefined(input) } as Answers & ResolveInput;
+
+  // Bidirectional sync between flat `withAnalysis` / `withDomain` flags and
+  // `toolClasses`. Callers that pass either path get a consistent shape.
+  let toolClasses: ToolClass[] = merged.toolClasses ?? [...defaults.toolClasses];
+  if (input.withAnalysis !== undefined) {
+    toolClasses = toggleClass(toolClasses, 'analysis', input.withAnalysis);
+  }
+  if (input.withDomain !== undefined) {
+    toolClasses = toggleClass(toolClasses, 'domain', input.withDomain);
+  }
+  const withAnalysis = toolClasses.includes('analysis');
+  const withDomain = toolClasses.includes('domain');
+
   return {
-    ...defaults,
-    ...stripUndefined(input),
+    ...merged,
     preset,
+    toolClasses,
+    withAnalysis,
+    withDomain,
+    promptStrategies: input.promptStrategies ?? {},
     models: parseModelSpec(input.models),
   };
+}
+
+function toggleClass(classes: ToolClass[], cls: ToolClass, on: boolean): ToolClass[] {
+  const has = classes.includes(cls);
+  if (on && !has) return [...classes, cls];
+  if (!on && has) return classes.filter((c) => c !== cls);
+  return classes;
 }
 
 function stripUndefined<T extends object>(obj: T): T {
