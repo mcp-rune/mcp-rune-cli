@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.10.1] - 2026-06-09
+
+### Fixed
+
+- **`templates/advanced/src/config.ts.ejs`** — replaced `vectorStorage.initVectorStorage({ pool, ... })` with `createPgvectorAdapter({ pool })` → `initVectorStorage({ adapter })`. The old `{ pool }` shorthand was removed from `VectorStorageOptions` in mcp-rune v0.102.0; the template hadn't caught up and the scaffold-typecheck CI would fail.
+- **`templates/advanced/__only_if_useVectorStorage__/src/storage/vector-store.ts`** — updated stub to use `createPgvectorAdapter` from `@mcp-rune/mcp-rune/runtime/vendor/pgvector` (new named export in v0.102.2).
+- **`templates/advanced/__only_if_withDomain__/src/domain/registry.ts`** — updated to `InMemoryDomainAdapter` + `DomainModule` API (breaking change in v0.102.0 which removed `DomainKnowledge` / `RuleSet` / `WorkflowRegistry` constructor shape from `DomainRegistry`).
+
+### Changed
+
+- **Default `mcpRuneVersion` fallback** bumped from `^0.97.0` to `^0.102.0` in `src/render/copy-tree.ts` and `src/commands/add-model.ts`.
+
+### Tests
+
+- `scaffold.spec.ts` — added assertions that `domain/registry.ts` uses the new adapter API and does not contain the old constructor shape.
+- `scaffold-typecheck.spec.ts` — added `advanced-with-domain` variant to the typecheck smoke matrix.
+
 ## [0.10.0] - 2026-06-09
 
 > **Database setup in `rune new`.** When scaffolding an advanced project with analysis enabled, the wizard now prompts whether to start the bundled docker-compose pgvector, use an existing `DATABASE_URL`, or skip. The chosen branch runs after `npm install`: docker starts and waits for health, both branches run `npm run db:migrate`, and the existing-url branch writes the URL to `.env`. A new shared `db-setup.ts` module is extracted so `rune db up` reuses the same logic.
@@ -23,6 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - **`README.md`** — commands table updated; new "Database setup during `rune new`" section.
 - **`__tests__/commands/new/pipeline.spec.ts`** — expected chapter list updated from 6 → 7 (`Database` added).
 
+[0.10.1]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.9.1...v0.10.0
 
 ## [0.9.1] - 2026-06-08

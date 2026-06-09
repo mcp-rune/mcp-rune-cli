@@ -16,6 +16,7 @@ import { errorTracking, tracing, vectorStorage } from '@mcp-rune/mcp-rune/runtim
 <% } else { -%>
 import { errorTracking, logger, tracing, vectorStorage } from '@mcp-rune/mcp-rune/runtime'
 <% } -%>
+import { createPgvectorAdapter } from '@mcp-rune/mcp-rune/runtime/vendor/pgvector'
 
 import { configSchema } from '../config/schema.js'
 import { closeDatabase, initDatabase } from './db.js'
@@ -124,10 +125,9 @@ startup.phase('database', 'Database', (log) => {
 <% } -%>
   if (config.analysis.enabled) {
     vectorStorage.initVectorStorage({
-      pool,
+      adapter: createPgvectorAdapter({ pool }),
       serviceName: SERVER_NAME,
       version: SERVER_VERSION,
-      retentionDays: 30
     })
     log.debug('Vector storage enabled')
   }
