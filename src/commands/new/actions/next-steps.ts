@@ -3,9 +3,14 @@ import terminalLink from 'terminal-link';
 import { accent, muted, strong } from '../../../core/color.js';
 import type { NewContext } from '../context.js';
 
-type Ctx = Pick<NewContext, 'scaffoldMode' | 'projectName' | 'install' | 'skipMascot' | 'mascot'>;
+type Ctx = Pick<
+  NewContext,
+  'scaffoldMode' | 'projectName' | 'install' | 'skipMascot' | 'mascot' | 'dbSetup' | 'withAnalysis'
+>;
 
 const DOCS_URL = 'https://github.com/mcp-rune/mcp-rune';
+const DB_SETUP_DOCS_URL =
+  'https://github.com/mcp-rune/mcp-rune/blob/master/docs/guides/11-reference/database-setup.md';
 
 export async function nextSteps(ctx: Ctx): Promise<void> {
   const lines: string[] = [];
@@ -14,11 +19,19 @@ export async function nextSteps(ctx: Ctx): Promise<void> {
   if (ctx.scaffoldMode === 'template' || ctx.scaffoldMode === 'offlineTemplate') {
     lines.push(`${muted('▸')} ${muted('see the template README for how to run it')}`);
   } else {
+    if (ctx.dbSetup === 'skip' && ctx.withAnalysis) {
+      lines.push(`${muted('▸')} ${accent('rune db up')}  ${muted('(configure + migrate database)')}`);
+    }
     lines.push(`${muted('▸')} ${accent('npm run start:local')}`);
     lines.push(`${muted('▸')} ${accent('rune inspect')}  ${muted('(open MCP Inspector)')}`);
   }
   lines.push('');
   lines.push(`${muted('Docs:')} ${terminalLink('mcp-rune/mcp-rune', DOCS_URL, { fallback: () => DOCS_URL })}`);
+  if (ctx.dbSetup === 'skip' && ctx.withAnalysis) {
+    lines.push(
+      `${muted('DB setup:')} ${terminalLink('database-setup.md', DB_SETUP_DOCS_URL, { fallback: () => DB_SETUP_DOCS_URL })}`,
+    );
+  }
 
   console.log();
   console.log(

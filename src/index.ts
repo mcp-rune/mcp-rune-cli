@@ -37,7 +37,10 @@ export function buildProgram(): Command {
     .option('--fancy', 'force the banner and mascot on (overrides CI/non-TTY auto-skip)')
     .option('--no-install', "don't run npm install after scaffolding")
     .option('--no-git', "don't initialize a git repo")
-    .option('--with-analysis', 'enable the analysis module (Docker pgvector)')
+    .option(
+      '--with-analysis',
+      'enable the analysis module (Docker pgvector). Triggers a Database setup prompt (docker | existing-url | skip) — default under --yes is docker.',
+    )
     .option('--with-domain', 'enable the domain workflows module')
     .option('--transport <transport>', 'stdio | http | both')
     .option('--models <models>', 'comma-list: Name1,Name2')

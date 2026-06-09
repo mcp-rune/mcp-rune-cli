@@ -1,6 +1,7 @@
 import { muted, strong } from '../../core/color.js';
 import { apps } from './actions/apps.js';
 import { auth } from './actions/auth.js';
+import { database } from './actions/database.js';
 import { fetchTemplate } from './actions/fetch-template.js';
 import { intro } from './actions/intro.js';
 import { layers } from './actions/layers.js';
@@ -45,6 +46,7 @@ export const PIPELINE: readonly PipelineEntry[] = [
   { step: transport, chapter: 'Server' },
   { step: auth },
   { step: observability },
+  { step: database, chapter: 'Database' },
   { step: summary },
   { step: scaffoldHeader },
   { step: render },

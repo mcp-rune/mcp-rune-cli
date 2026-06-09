@@ -90,13 +90,24 @@ Early WIP. The Simple preset is the first target; Advanced (HTTP + OAuth + analy
 rune new <project-name>     Scaffold a new server
 rune add model <Name>       Add a model to an existing project (planned)
 rune doctor                 Validate local env (planned)
-rune db up                  Start analysis DB + run migrations (planned)
+rune db up                  Start docker pgvector + run migrations (analysis preset)
+rune inspect                Open MCP Inspector against the current project
 ```
 
 ## Presets
 
 - **simple** — stdio transport, no DB, CRUD on declared models. `npm install && npm run start:local`.
 - **advanced** — HTTP + OAuth, optional analysis (Docker pgvector), domain workflows, MCP Apps, profiles.
+
+### Database setup during `rune new`
+
+When you scaffold an advanced project with `--with-analysis` (or accept analysis in the wizard), `rune new` prompts how to configure the database before running migrations:
+
+- **docker** — starts the bundled `docker-compose.yml` (pgvector/pgvector:pg16), waits for the container to be healthy, then runs `npm run db:migrate`.
+- **existing** — prompts for a `DATABASE_URL`, writes it to `.env`, then runs `npm run db:migrate`.
+- **skip** — leaves the database untouched; the project's `Next steps` panel points at `rune db up` and the [database-setup guide](https://github.com/mcp-rune/mcp-rune/blob/master/docs/guides/11-reference/database-setup.md).
+
+Under `--yes`, the default is `docker`. Simple and advanced-without-analysis projects skip this step entirely.
 
 ## Templates
 

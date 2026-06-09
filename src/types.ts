@@ -9,6 +9,7 @@ export type SearchAdapterChoice = 'none' | 'ransack' | 'custom';
 export type LoggerChoice = 'framework' | 'pino';
 export type ErrorTrackingChoice = 'none' | 'sentry';
 export type TracingChoice = 'none' | 'langfuse';
+export type DbSetupChoice = 'docker' | 'existing-url' | 'skip';
 
 export type ToolClass = 'strategy' | 'data' | 'analysis' | 'operations' | 'domain';
 export const ALL_TOOL_CLASSES: readonly ToolClass[] = [

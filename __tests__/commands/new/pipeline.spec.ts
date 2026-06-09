@@ -2,14 +2,22 @@ import { describe, expect, it } from 'vitest';
 import { PIPELINE, shouldPrintChapter } from '#src/commands/new/pipeline.js';
 
 describe('PIPELINE shape', () => {
-  it('chapters cover Models → Prompts → Tools → Apps → Layers → Server, in order', () => {
+  it('chapters cover Models → Prompts → Tools → Apps → Layers → Server → Database, in order', () => {
     const chapters = PIPELINE.map((p) => p.chapter).filter((c): c is string => Boolean(c));
-    expect(chapters).toEqual(['Models', 'Prompts', 'Tools', 'Apps', 'Layers', 'Server']);
+    expect(chapters).toEqual([
+      'Models',
+      'Prompts',
+      'Tools',
+      'Apps',
+      'Layers',
+      'Server',
+      'Database',
+    ]);
   });
 
-  it('only the six expected steps carry a chapter (no orphan chapters)', () => {
+  it('only the seven expected steps carry a chapter (no orphan chapters)', () => {
     const stepsWithChapter = PIPELINE.filter((p) => p.chapter);
-    expect(stepsWithChapter).toHaveLength(6);
+    expect(stepsWithChapter).toHaveLength(7);
   });
 
   it('every entry has a step (no malformed entries)', () => {

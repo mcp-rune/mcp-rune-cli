@@ -6,6 +6,7 @@ import type { Task } from '../../core/tasks.js';
 import type {
   ApiClientChoice,
   ApiConvention,
+  DbSetupChoice,
   ErrorTrackingChoice,
   LoggerChoice,
   Model,
@@ -44,6 +45,8 @@ export interface NewCommandOptions {
   tracing?: TracingChoice;
   vectorStorage?: boolean;
   sharedModelAttrs?: boolean;
+  dbSetup?: DbSetupChoice;
+  databaseUrl?: string;
 }
 
 export type ScaffoldMode = 'preset' | 'template' | 'offlineTemplate';
@@ -92,6 +95,10 @@ export interface NewContext {
   promptStrategies?: Record<string, PromptStrategyChoice>;
   modelsRaw?: string;
   models?: Model[];
+
+  // Database setup (advanced + withAnalysis only)
+  dbSetup?: DbSetupChoice;
+  databaseUrl?: string;
 
   // Post-scaffold
   install: boolean;
@@ -218,6 +225,8 @@ export function buildNewContext(
     vectorStorage: opts.vectorStorage,
     sharedModelAttrs: opts.sharedModelAttrs,
     modelsRaw: opts.models,
+    dbSetup: opts.dbSetup,
+    databaseUrl: opts.databaseUrl,
     install: opts.install !== false,
     git: opts.git !== false,
   };
