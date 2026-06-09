@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.10.0] - 2026-06-09
+
+> **Database setup in `rune new`.** When scaffolding an advanced project with analysis enabled, the wizard now prompts whether to start the bundled docker-compose pgvector, use an existing `DATABASE_URL`, or skip. The chosen branch runs after `npm install`: docker starts and waits for health, both branches run `npm run db:migrate`, and the existing-url branch writes the URL to `.env`. A new shared `db-setup.ts` module is extracted so `rune db up` reuses the same logic.
+
+### Added
+
+- **Database setup step in `rune new` wizard** (`src/commands/new/actions/database.ts`). New pipeline step inserted between `observability` and `summary`; fires only when `preset=advanced && withAnalysis=true`. Three choices: `docker` (start bundled pgvector), `existing-url` (prompt for `DATABASE_URL`), `skip` (no-op + next-steps hint). Under `--yes` defaults to `docker`.
+- **Shared `src/core/db-setup.ts`** — `startDockerDb`, `waitForDbHealthy`, `runMigrations`, `writeEnvDatabaseUrl`. Upserts `DATABASE_URL` into `.env`, seeding from `.env.example` when `.env` is absent; handles commented-out keys without duplicating them.
+
+### Changed
+
+- **`src/commands/new/actions/post-scaffold.ts`** extended with conditional DB tasks after `npm install`: docker branch starts container + waits healthy + runs migrations; existing-url branch writes `.env` + runs migrations; skip is a no-op. Each task has a recovery-command `onError` notice.
+- **`src/commands/db-up.ts`** refactored to use `db-setup.ts` helpers (no behavior change).
+- **`src/commands/new/actions/next-steps.ts`** — surfaces `rune db up` and a link to `database-setup.md` in the next-steps panel when db was skipped.
+- **`src/commands/new/actions/summary.ts`** — adds `Database setup: docker | existing-url | skip` line for advanced+analysis presets.
+- **`src/index.ts`** — `--with-analysis` help text describes the new database prompt.
+- **`README.md`** — commands table updated; new "Database setup during `rune new`" section.
+- **`__tests__/commands/new/pipeline.spec.ts`** — expected chapter list updated from 6 → 7 (`Database` added).
+
+[0.10.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.9.1...v0.10.0
+
 ## [0.9.1] - 2026-06-08
 
 ### Added

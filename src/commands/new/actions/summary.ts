@@ -27,6 +27,7 @@ type Ctx = Pick<
   | 'offlineTemplate'
   | 'install'
   | 'git'
+  | 'dbSetup'
 >;
 
 export async function summary(ctx: Ctx): Promise<void> {
@@ -88,6 +89,9 @@ function buildSummary(ctx: Ctx): SummaryLine[] {
       lines.push({ label: 'Tracing', value: ctx.tracing ?? 'none' });
       if (ctx.withAnalysis) lines.push({ label: 'Analysis module', value: 'enabled' });
       if (ctx.withDomain) lines.push({ label: 'Domain workflows', value: 'enabled' });
+      if (ctx.withAnalysis && ctx.dbSetup) {
+        lines.push({ label: 'Database setup', value: ctx.dbSetup });
+      }
     }
     lines.push({ label: 'Models', value: ctx.modelsRaw?.trim() || muted('(none)') });
   }
