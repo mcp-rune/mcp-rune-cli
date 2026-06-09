@@ -144,7 +144,7 @@ function makeVars(cwd: string, preset: Preset, models: Model[]): TemplateVars {
     useLangfuse: false,
     toolClasses: [],
     promptStrategies: {},
-    mcpRuneVersion: pkg.dependencies?.['@mcp-rune/mcp-rune'] ?? '^0.97.0',
+    mcpRuneVersion: pkg.dependencies?.['@mcp-rune/mcp-rune'] ?? '^0.102.0',
     nodeEngine: '>=24.0.0',
   };
 }

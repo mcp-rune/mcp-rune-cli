@@ -108,6 +108,15 @@ describe.runIf(canRun())('scaffold typecheck smoke', () => {
         searchAdapter: 'custom',
         sharedModelAttrs: true
       }
+    },
+    {
+      name: 'advanced-with-domain',
+      answers: {
+        projectName: 'smoke-advanced-with-domain',
+        preset: 'advanced',
+        models: 'Book',
+        withDomain: true
+      }
     }
   ]
 

@@ -1,25 +1,21 @@
 /**
- * Vector storage hook — stub scaffolded by `rune new --vector-storage`.
+ * Vector storage — scaffolded by `rune new --vector-storage`.
  *
- * The framework's `vectorStorage` runtime (`@mcp-rune/mcp-rune/runtime`)
- * exposes `isVectorStorageEnabled()` plus the lifecycle hooks tools rely on.
- * Wire your concrete provider (Postgres pgvector, Qdrant, Pinecone, …) in
- * `enableVectorStorage` below, then call it from `src/config.ts` during
- * startup so `ToolRegistry` picks it up via `vectorStorageEnabled`.
+ * Call `enableVectorStorage(pool)` once at server startup (before ToolRegistry
+ * is constructed). Tools tagged `requiresVectorStorage` only appear in
+ * `tools/list` after this call succeeds.
+ *
+ * Retention options can be tuned via `createPgvectorAdapter` options:
+ *   toolMemoriesRetentionDays (default 30)
+ *   ingestedRecordsRetentionDays (default 7)
  */
 
+import type { Pool } from 'pg'
 import { vectorStorage } from '@mcp-rune/mcp-rune/runtime'
+import { createPgvectorAdapter } from '@mcp-rune/mcp-rune/runtime/vendor/pgvector'
 
-export interface VectorStoreConfig {
-  url?: string
-  apiKey?: string
-}
-
-export function enableVectorStorage(_config: VectorStoreConfig = {}): void {
-  // TODO: register your provider with the framework's vector storage service.
-  // Example: `vectorStorage.configure({ provider: new PgVectorProvider(_config) })`
-  //
-  // After configuration, `vectorStorage.isVectorStorageEnabled()` should
-  // return true so tools tagged `requiresVectorStorage` light up.
-  void vectorStorage
+export function enableVectorStorage(pool: Pool): void {
+  vectorStorage.initVectorStorage({
+    adapter: createPgvectorAdapter({ pool }),
+  })
 }

@@ -119,6 +119,16 @@ describe('advanced preset', () => {
     await renderTemplate(templateUrl, outDir, ans);
 
     expect(existsSync(join(outDir, 'src/domain/registry.ts'))).toBe(true);
+    const registry = readFileSync(join(outDir, 'src/domain/registry.ts'), 'utf8');
+    // Must use the new adapter-based API
+    expect(registry).toContain('InMemoryDomainAdapter');
+    expect(registry).toContain('DomainModule');
+    expect(registry).toContain('DomainRegistry');
+    // Must NOT use the old constructor shape
+    expect(registry).not.toContain('DomainKnowledge');
+    expect(registry).not.toContain('new RuleSet');
+    expect(registry).not.toContain('WorkflowRegistry');
+    expect(registry).not.toContain('knowledge:');
   });
 
   it('writes a config schema including OAuth when transport has http', async () => {
