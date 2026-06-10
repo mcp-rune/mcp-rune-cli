@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.11.0] - 2026-06-10
+
+### Removed
+
+- **`templates/simple/.npmrc` and `templates/advanced/.npmrc`** — both files pinned `@mcp-rune` to `npm.pkg.github.com`. Now that `@mcp-rune/mcp-rune` is on public npmjs, scaffolded projects no longer need GitHub Packages authentication and `npm install` works without `GH_PACKAGES_READ_TOKEN`. This fixes `npm install failed: 401 Unauthorized` on `rune new` for any user without the token configured.
+- **`GH_PACKAGES_READ_TOKEN` doctor check in `src/commands/doctor/env-checks.ts`** — the warning that the token was unset is obsolete now that the scaffolded `.npmrc` is gone.
+- **`GH_PACKAGES_READ_TOKEN` from scaffolded `.env.example` files** (`templates/simple/.env.example`, `templates/advanced/.env.example.ejs`) and their respective READMEs' "fill in" hints.
+- **`canRun()` gating in `__tests__/integration/scaffold-typecheck.spec.ts`** — the smoke can now always run locally since the install no longer requires GH Packages auth.
+- **Token plumbing in `.github/workflows/ci.yml`** — dropped the `GH_PACKAGES_READ_TOKEN`/`NODE_AUTH_TOKEN` env block on the test step and the `registry-url: https://npm.pkg.github.com` setup-node config for the `ci` job.
+
+### Changed
+
+- **`package.json` · `publishConfig`** — added `{ "registry": "https://registry.npmjs.org", "access": "public" }` so `npm publish` targets public npmjs (default for `@scope` is restricted-private). Mirrors `@mcp-rune/mcp-rune`'s setup.
+- **`.github/workflows/ci.yml` · `publish` job** — kept the GitHub-Packages-flavored setup-node config (registry-url + scope + `NODE_AUTH_TOKEN: GITHUB_TOKEN`) but `publishConfig.registry` in `package.json` overrides the publish target to npmjs. Mirrors `@mcp-rune/mcp-rune`'s pattern exactly.
+- **`README.md`** — added `npm version` badge; removed the "not published to npm yet" note now that the package can publish.
+- **`AGENTS.md`** — dropped the now-obsolete `GH_PACKAGES_READ_TOKEN` callout from the `rune inspect` smoke recipe and the "missing GH Packages token" caveat.
+
+[0.11.0]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.10.2...v0.11.0
+
 ## [0.10.2] - 2026-06-10
 
 ### Added

@@ -32,7 +32,6 @@ describe('simple preset', () => {
     expect(existsSync(join(outDir, 'package.json'))).toBe(true);
     expect(existsSync(join(outDir, 'src/server.ts'))).toBe(true);
     expect(existsSync(join(outDir, 'src/config.ts'))).toBe(true);
-    expect(existsSync(join(outDir, '.npmrc'))).toBe(true);
     expect(existsSync(join(outDir, '.env.example'))).toBe(true);
   });
 

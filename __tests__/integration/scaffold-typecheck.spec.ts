@@ -1,7 +1,7 @@
 /**
  * Scaffold-and-typecheck smoke. For each preset, renders the template into
- * a temp dir, npm-installs against the local `@mcp-rune/mcp-rune` registry
- * (or skips when the package is unavailable), and runs `tsc --noEmit`.
+ * a temp dir, npm-installs `@mcp-rune/mcp-rune` from public npm, and runs
+ * `tsc --noEmit`.
  *
  * This catches "templates are out of sync with the published library" the
  * moment the renderer emits files whose types no longer line up — the same
@@ -18,12 +18,6 @@ import { renderTemplate } from '#src/render/copy-tree.js'
 
 const REPO_ROOT = new URL('../..', import.meta.url)
 
-function canRun(): boolean {
-  // The package lives behind GitHub Packages; outside CI we can't reach it.
-  // The CI workflow exports GH_PACKAGES_READ_TOKEN before running tests.
-  return Boolean(process.env.GH_PACKAGES_READ_TOKEN || process.env.NODE_AUTH_TOKEN)
-}
-
 function exec(cmd: string, args: string[], cwd: string): { stdout: string; status: number } {
   try {
     const stdout = execFileSync(cmd, args, { cwd, encoding: 'utf8', stdio: 'pipe' })
@@ -35,7 +29,7 @@ function exec(cmd: string, args: string[], cwd: string): { stdout: string; statu
   }
 }
 
-describe.runIf(canRun())('scaffold typecheck smoke', () => {
+describe('scaffold typecheck smoke', () => {
   // Cover every transport variant: stdio-only emits no remote.ts, http-only
   // emits no local.ts, both emits both. A regression in the conditional
   // `__only_if_hasHttp__` / `__only_if_hasStdio__` directories would slip
@@ -128,9 +122,6 @@ describe.runIf(canRun())('scaffold typecheck smoke', () => {
         const templateUrl = new URL(`templates/${presetDir}/`, REPO_ROOT)
         await renderTemplate(templateUrl, outDir, resolveAnswers(answers))
 
-        // .npmrc in the scaffold already maps the @mcp-rune scope to
-        // npm.pkg.github.com; install picks up the token from env.
-        //
         // `--ignore-scripts` skips native build steps in transitive deps
         // (notably @huggingface/transformers' sharp), which need a working
         // node-gyp toolchain. Those scripts aren't required to verify our

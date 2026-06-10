@@ -6,7 +6,6 @@ MCP server scaffolded with [`@mcp-rune/create`](https://github.com/mcp-rune/mcp-
 
 ```bash
 cp .env.example .env
-# fill in GH_PACKAGES_READ_TOKEN
 npm install
 npm run start:local
 ```
