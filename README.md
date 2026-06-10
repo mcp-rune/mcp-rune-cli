@@ -1,5 +1,6 @@
 # @mcp-rune/create
 
+[![npm version](https://img.shields.io/npm/v/@mcp-rune/create.svg)](https://www.npmjs.com/package/@mcp-rune/create)
 [![CI](https://github.com/mcp-rune/mcp-rune-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/mcp-rune/mcp-rune-cli/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![MCP SDK](https://img.shields.io/badge/MCP_SDK-1.x-blue)](https://github.com/modelcontextprotocol/typescript-sdk)
@@ -7,8 +8,6 @@
 Scaffolder for [mcp-rune](https://github.com/mcp-rune/mcp-rune)-based MCP servers.
 
 ## Production installation
-
-> **NOTE:** The package is not published to npm yet. Until it is, use the [Local development](#local-development) instructions below.
 
 Install the CLI globally and run it:
 

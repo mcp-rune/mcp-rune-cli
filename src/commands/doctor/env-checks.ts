@@ -33,17 +33,6 @@ export const CHECKS: Check[] = [
   },
 
   async () => {
-    const set = Boolean(process.env.GH_PACKAGES_READ_TOKEN);
-    return set
-      ? { status: 'ok', label: 'GH_PACKAGES_READ_TOKEN set' }
-      : {
-          status: 'warn',
-          label: 'GH_PACKAGES_READ_TOKEN not set',
-          hint: 'install of @mcp-rune/mcp-rune will fail; create at github.com/settings/tokens',
-        };
-  },
-
-  async () => {
     try {
       await execa('docker', ['info'], { timeout: 3000 });
       return { status: 'ok', label: 'Docker daemon reachable' };

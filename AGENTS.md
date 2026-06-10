@@ -125,8 +125,7 @@ launch with `PORT IS IN USE at port 627{4,7}`.
 ### Recipe
 
 ```bash
-# 0) confirm env — npm install in step 1 needs GH_PACKAGES_READ_TOKEN until
-#    @mcp-rune/mcp-rune goes public on npmjs.org.
+# 0) confirm env
 rune doctor
 
 # 1) fresh scaffold (simple preset by default)
@@ -152,10 +151,9 @@ pkill -f modelcontextprotocol/inspector
 ### Notes
 
 - The inspector UI boots independently of the scaffold's `node_modules/`, so
-  the smoke remains useful even when `npm install` has soft-failed (e.g.
-  missing GH Packages token). The MCP handshake itself will fail in that
-  state, but "does `rune inspect` correctly spawn the inspector?" still
-  gets a clean yes/no.
+  the smoke remains useful even when `npm install` has soft-failed. The MCP
+  handshake itself will fail in that state, but "does `rune inspect`
+  correctly spawn the inspector?" still gets a clean yes/no.
 - `rune inspect` treats `SIGINT` as a clean exit
   (`src/commands/inspect.ts:84-86`). The `npx` child does not always
   receive the signal — `pkill -f modelcontextprotocol/inspector` is the

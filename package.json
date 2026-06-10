@@ -1,6 +1,6 @@
 {
   "name": "@mcp-rune/create",
-  "version": "0.10.2",
+  "version": "0.11.0",
   "description": "Scaffolder for mcp-rune-based MCP servers",
   "type": "module",
   "bin": {
@@ -18,6 +18,10 @@
     "templates/",
     "README.md"
   ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
