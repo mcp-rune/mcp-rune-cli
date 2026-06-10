@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.10.2] - 2026-06-10
+
+### Added
+
+- **`## Flags & prompts` reference table in `README.md`** — exhaustive matrix mapping every `rune new` wizard prompt to its preset (simple / advanced / both), values, default, and equivalent CLI flag, plus a second table for side-effect flags with no prompt (`--yes`, `--dry-run`, `--no-install`, `--mcp-rune-local`, etc.). Sourced from `src/commands/new/actions/*.ts`, `src/commands/new/presets.ts`, and `src/index.ts`. The `mcp-rune.dev` CLI page "All flags & prompts" CTA now deep-links to the `#flags--prompts` anchor.
+
+### Changed
+
+- **README · "Pointing scaffolded projects at a local mcp-rune checkout"** — reframed the motivation now that `@mcp-rune/mcp-rune` is published on public npm (v0.102.4). The GitHub Packages `E401` workaround is no longer the reason to use `--mcp-rune-local`; the flag is now positioned as a dev convenience for live-editing the SDK against the scaffolded project.
+
+[0.10.2]: https://github.com/mcp-rune/mcp-rune-cli/compare/v0.10.1...v0.10.2
+
 ## [0.10.1] - 2026-06-09
 
 ### Fixed

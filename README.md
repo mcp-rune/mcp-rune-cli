@@ -66,7 +66,7 @@ To remove the global link later: `npm unlink -g @mcp-rune/create`.
 
 ### Pointing scaffolded projects at a local mcp-rune checkout
 
-While `@mcp-rune/mcp-rune` is not published publicly, `npm install` inside a scaffolded project fails with `E401 Unauthorized` against `npm.pkg.github.com`. To avoid the GitHub Packages token altogether, point the new project at a local checkout of `mcp-rune`:
+`@mcp-rune/mcp-rune` is now on public npm, so `npm install` inside a scaffolded project works out of the box. The `--mcp-rune-local` escape hatch is still useful when you want edits in a local `mcp-rune` checkout to flow into the scaffolded project without a republish:
 
 ```bash
 # Flag form (absolute, ~, or relative paths all work)
@@ -108,6 +108,45 @@ When you scaffold an advanced project with `--with-analysis` (or accept analysis
 - **skip** — leaves the database untouched; the project's `Next steps` panel points at `rune db up` and the [database-setup guide](https://github.com/mcp-rune/mcp-rune/blob/master/docs/guides/11-reference/database-setup.md).
 
 Under `--yes`, the default is `docker`. Simple and advanced-without-analysis projects skip this step entirely.
+
+## Flags & prompts
+
+`rune new` is a wizard with an equivalent CLI flag for every interactive prompt — so the same choices can be made non-interactively, in CI, or scripted. The wizard asks **one** question in the simple preset (the mode picker) and the full pipeline in the advanced preset; `--yes` accepts every default and skips the wizard entirely.
+
+| Prompt | Preset | Values | Default | Flag |
+|---|---|---|---|---|
+| How would you like to start? | both | `quick`, `customize`, `template` | `quick` | `--preset` / `--template` |
+| Which preset? | both | `simple`, `advanced` | `simple` | `--preset` |
+| Models to scaffold | both | comma list, e.g. `Book,Author` | (empty) | `--models` |
+| Prompt strategy *(per model)* | advanced | `default`, `custom` | `default` | (none) |
+| Tool classes to enable | advanced | `strategy`, `data`, `analysis`, `operations`, `domain` | `strategy, data, operations` | `--with-analysis`, `--with-domain` |
+| API convention? | advanced | `jsonapi`, `rest-flat`, `custom` | `jsonapi` | `--api-convention` |
+| API client? | advanced | `none`, `fetch`, `axios`, `custom` | `none` | `--api-client` |
+| Search adapter? | advanced | `none`, `ransack`, `custom` | `none` | `--search-adapter` |
+| DataLayer · enable vector storage hook? | advanced | yes / no | no | `--vector-storage` |
+| ModelLayer · scaffold a shared BaseModel subclass? | advanced | yes / no | no | `--shared-model-attrs` |
+| AnalysisLayer · enable analysis module? | advanced | yes / no | no | `--with-analysis` |
+| Transport? | advanced | `stdio`, `http`, `both` | `both` | `--transport` |
+| HTTP server auth? | advanced + http | `oauth`, `static-token` | `oauth` | `--server-auth` |
+| Logger? | advanced | `framework`, `pino` | `framework` | `--logger` |
+| Error tracking? | advanced | `none`, `sentry` | `none` | `--error-tracking` |
+| Tracing? | advanced | `none`, `langfuse` | `none` | `--tracing` |
+| Database setup? | advanced + analysis | `docker`, `existing-url`, `skip` | `docker` | `--db-setup`, `--database-url` |
+
+### Flags with no prompt equivalent
+
+These change the run itself — they don't answer a question, so they only appear as flags.
+
+| Flag | Effect |
+|---|---|
+| `--yes` | Accept all defaults; skip every interactive prompt. |
+| `--dry-run` | Print the task plan; write nothing to disk. |
+| `--verbose` | Stream subprocess output (`npm install`, `git init`, etc.) instead of spinners. |
+| `--no-install` | Skip `npm install` after scaffolding. |
+| `--no-git` | Skip `git init` after scaffolding. |
+| `--skip-mascot` / `--fancy` | Suppress / force the welcome banner (auto-suppressed in CI and non-TTY). |
+| `--offline-template <path>` | Use a local template directory instead of fetching via `tiged`. |
+| `--mcp-rune-local <path>` | Point the scaffolded project at a local `mcp-rune` checkout (also reads `MCP_RUNE_LOCAL_PATH`). |
 
 ## Templates
 
