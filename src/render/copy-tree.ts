@@ -150,7 +150,7 @@ function makeVars(answers: Answers): TemplateVars {
     toolClasses: answers.toolClasses ?? [],
     promptStrategies: answers.promptStrategies ?? {},
     models: normalizeModels(answers.models),
-    mcpRuneVersion: answers.mcpRuneVersion ?? '^0.102.0',
+    mcpRuneVersion: answers.mcpRuneVersion ?? '^0.104.1',
     nodeEngine: answers.nodeEngine ?? '>=24.0.0',
   };
 }
