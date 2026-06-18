@@ -17,6 +17,7 @@ import { errorTracking, tracing, vectorStorage } from '@mcp-rune/mcp-rune/runtim
 import { errorTracking, logger, tracing, vectorStorage } from '@mcp-rune/mcp-rune/runtime'
 <% } -%>
 import { createPgvectorAdapter } from '@mcp-rune/mcp-rune/runtime/vendor/pgvector'
+import { assertMigrationsCurrent, type Feature } from '@mcp-rune/mcp-rune/db/migrations'
 
 import { configSchema } from '../config/schema.js'
 import { closeDatabase, initDatabase } from './db.js'
@@ -111,12 +112,21 @@ startup.phase('tracing', 'Tracing', () => {
   })
 })
 
-startup.phase('database', 'Database', (log) => {
+await startup.phaseAsync('database', 'Database', async (log) => {
   const pool = initDatabase(config.database.url)
   if (!pool) {
     log.debug('DATABASE_URL not set — database features disabled')
     return
   }
+
+  // Fail fast if the database is behind on migrations, instead of letting a
+  // missing column surface as a cryptic SQL error mid-tool-call. The feature
+  // set mirrors what this server provisions: always `core`, plus `analysis`
+  // when vector storage is enabled. Module-independent — covers every pending
+  // migration, not just analysis ones.
+  const features: Feature[] = ['core']
+  if (config.analysis.enabled) features.push('analysis')
+  await assertMigrationsCurrent(pool, { features })
 
 <% if (hasHttp && !useStaticTokenAuth) { -%>
   _setAdapter(new PostgresqlAdapter({ pool }))
