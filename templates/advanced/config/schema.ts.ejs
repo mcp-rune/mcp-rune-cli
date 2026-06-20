@@ -5,9 +5,14 @@
  * at startup. Every env var read in the codebase should be declared here.
  */
 
-import type { ConfigSchema } from '@mcp-rune/mcp-rune/core'
+import { frameworkConfigSchema, type ConfigSchema } from '@mcp-rune/mcp-rune/core'
 
 export const configSchema = {
+  // Framework-owned logging + runtime vars (logging.* → LOG_*,
+  // runtime.environment → NODE_ENV). Applied to the logger in config.ts via
+  // configureLogging() so the validated values supersede the env bootstrap.
+  ...frameworkConfigSchema,
+
   api: {
     url: {
       env: 'API_URL',
@@ -104,7 +109,7 @@ export const configSchema = {
 
   http: {
     corsOrigins: { env: 'CORS_ORIGINS', doc: 'Comma-separated list of allowed CORS origins' },
-    environment: { env: 'NODE_ENV', default: 'development', doc: 'Runtime environment' },
+    // NODE_ENV is provided by frameworkConfigSchema as runtime.environment.
   },
 
   errorTracking: {

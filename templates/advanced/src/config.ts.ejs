@@ -12,7 +12,9 @@ import { createServer as createServerFactory } from '@mcp-rune/mcp-rune/server'
 import { _setAdapter, OAuthService, PostgresqlAdapter } from '@mcp-rune/mcp-rune/oauth2'
 <% } -%>
 <% if (usePinoLogger) { -%>
-import { errorTracking, tracing, vectorStorage } from '@mcp-rune/mcp-rune/runtime'
+// Your app logs via Pino (below), but mcp-rune's internals log via the
+// framework logger — configure it from the same validated config.
+import { errorTracking, logger as frameworkLogger, tracing, vectorStorage } from '@mcp-rune/mcp-rune/runtime'
 <% } else { -%>
 import { errorTracking, logger, tracing, vectorStorage } from '@mcp-rune/mcp-rune/runtime'
 <% } -%>
@@ -68,7 +70,15 @@ interface AppConfig {
     }
 <% } -%>
   }
-  http: { corsOrigins: string | undefined; environment: string }
+  http: { corsOrigins: string | undefined }
+  // From frameworkConfigSchema (spread into configSchema):
+  logging: {
+    level: string
+    format?: 'text' | 'json'
+    fileFormat?: 'text' | 'json'
+    fileEnabled: boolean
+  }
+  runtime: { environment: string }
   errorTracking: { sentryDsn: string | undefined }
   tracing: { langfusePublicKey: string | undefined; langfuseSecretKey: string | undefined }
 }
@@ -89,10 +99,28 @@ const { name: SERVER_NAME, version: SERVER_VERSION } = startup.phase(
 export const config = startup.phase('config', 'Load configuration', (log) => {
   const cfg = loadConfig(configSchema)
   log.debug(cfg.toString())
-  return cfg as unknown as AppConfig & { toString(): string }
+  const appCfg = cfg as unknown as AppConfig & { toString(): string }
+  // Apply the validated logging config, superseding the framework logger's
+  // env-derived bootstrap. No process.env reads — the loaded config is the
+  // single source of truth.
+<% if (usePinoLogger) { -%>
+  // Framework internals log via the framework logger; your app logs via Pino.
+  // Configure both from the same validated config.
+  frameworkLogger.configureLogging({
+    ...appCfg.logging,
+    production: appCfg.runtime.environment === 'production',
+  })
+  logger.configureLogging({ level: appCfg.logging.level })
+<% } else { -%>
+  logger.configureLogging({
+    ...appCfg.logging,
+    production: appCfg.runtime.environment === 'production',
+  })
+<% } -%>
+  return appCfg
 })
 
-const isProduction = config.http.environment === 'production'
+const isProduction = config.runtime.environment === 'production'
 
 startup.phase('error-tracking', 'Error tracking', () => {
   // Vendor (Sentry) reads SENTRY_DSN + NODE_ENV from env directly; the

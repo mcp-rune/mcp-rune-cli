@@ -147,6 +147,12 @@ These change the run itself — they don't answer a question, so they only appea
 | `--offline-template <path>` | Use a local template directory instead of fetching via `tiged`. |
 | `--mcp-rune-local <path>` | Point the scaffolded project at a local `mcp-rune` checkout (also reads `MCP_RUNE_LOCAL_PATH`). |
 
+## Logging in generated projects
+
+Generated projects log via the framework logger (or Pino with `--logger pino`). Log behavior is controlled by env vars — `LOG_LEVEL` (`error|warn|info|debug`), `LOG_FORMAT` (`text|json`), `LOG_FILE_FORMAT`, `LOG_FILE_ENABLED`, and `NODE_ENV` (production forces JSON). `LOG_LEVEL=debug rune-app` works out of the box, since the logger honors these at startup.
+
+The **advanced** preset goes further: its `config/schema.js` spreads mcp-rune's `frameworkConfigSchema`, so those vars are validated by `loadConfig` and applied to the logger via `configureLogging()` in `src/config.ts` — one source of truth, no stray `process.env` reads. The **simple** preset relies on the logger's bootstrap defaults. See each preset's `.env.example`.
+
 ## Templates
 
 As an alternative to presets, scaffold from a runnable example in the [`mcp-rune/examples`](https://github.com/mcp-rune/examples) repo:
