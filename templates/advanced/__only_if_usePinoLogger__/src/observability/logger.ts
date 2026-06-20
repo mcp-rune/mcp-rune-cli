@@ -19,6 +19,10 @@ interface ChildLogger {
   child: (meta: Record<string, unknown>) => ChildLogger
 }
 
+// Bootstrap level honors LOG_LEVEL (the usual pino/12-factor convention) so
+// logging works before config is loaded. `configureLogging()` below lets the
+// validated config supersede it — keeping a single source of truth once
+// loadConfig has run.
 const base = pino({
   level: process.env.LOG_LEVEL ?? 'info',
   formatters: {
@@ -55,6 +59,14 @@ export const logger = {
   debug: emit('debug', {}),
   setApp(name: string): void {
     appName = name
+  },
+  /**
+   * Apply validated logging config (from loadConfig), superseding the
+   * LOG_LEVEL bootstrap. Mirrors the framework logger's configureLogging so
+   * config.ts can wire both with one shape.
+   */
+  configureLogging(opts: { level?: string } = {}): void {
+    if (opts.level) base.level = opts.level
   },
   child(meta: Record<string, unknown> = {}): ChildLogger {
     return buildChild(meta)

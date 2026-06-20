@@ -17,7 +17,7 @@ const { config, createOAuthService, mcpConfig } = await import('../config.js')
 
 const port = config.transport.remote.port
 const baseUrl = config.transport.remote.baseUrl ?? `http://localhost:${port}`
-const isProduction = config.http.environment === 'production'
+const isProduction = config.runtime.environment === 'production'
 
 const server = new HttpServer({
   port,
