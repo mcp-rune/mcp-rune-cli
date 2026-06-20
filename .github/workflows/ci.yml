@@ -57,7 +57,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
+      # id-token: write lets `npm publish --provenance` OIDC-sign the
+      # tarball against this Actions run, so npmjs.com can show a
+      # verifiable link back to the source commit.
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -66,12 +69,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          # registry-url + scope tell setup-node to write a project .npmrc
-          # that authenticates against GitHub Packages and reads the token
-          # from $NODE_AUTH_TOKEN. publishConfig.registry in package.json
-          # overrides the target at publish time, sending the artifact to
-          # public npmjs.org instead.
-          registry-url: https://npm.pkg.github.com
+          # registry-url + scope make setup-node write a project .npmrc
+          # mapping the @mcp-rune scope to npmjs.com. A scoped mapping
+          # OVERRIDES package.json's publishConfig.registry at runtime — so it
+          # must point at the same registry we publish to. Pointing it at
+          # GitHub Packages is what silently retargeted v0.11.1 there.
+          registry-url: https://registry.npmjs.org
           scope: '@mcp-rune'
           cache: npm
 
@@ -84,9 +87,9 @@ jobs:
         run: npm run build
 
       - name: Publish
-        run: npm publish
+        run: npm publish --provenance --access public
         env:
-          # GITHUB_TOKEN is auto-provisioned by Actions. With permissions:
-          # packages: write, it has push rights to npm.pkg.github.com for
-          # this repo's scope.
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # NPM_TOKEN is an npm automation token (granular or classic) with
+          # publish rights to the @mcp-rune scope on registry.npmjs.org.
+          # Add it under repo Settings → Secrets and variables → Actions.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
